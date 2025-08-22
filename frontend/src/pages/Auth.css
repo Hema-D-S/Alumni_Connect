@@ -1,0 +1,210 @@
+/* ===== Container ===== */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #a30027, #ff758c);
+  padding: 1rem;
+}
+
+/* ===== Auth Box ===== */
+.auth-box {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 2.5rem;
+  width: 95%;
+  max-width: 420px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  transition: all 0.5s ease-in-out;
+  animation: scaleIn 0.6s ease;
+}
+
+/* Enlarge for SignUp */
+.signup-active {
+  max-width: 500px;
+  padding: 3rem;
+}
+
+/* ===== Headings ===== */
+.form-container h2 {
+  font-size: 2.2rem;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+}
+
+.red-text {
+  color: #a30027;
+}
+
+.white-text {
+  color: #fff;
+  background: #a30027;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+}
+
+/* ===== Social Login ===== */
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin: 1.2rem 0;
+}
+
+.social-btn {
+  border: none;
+  width: 48px;         
+  height: 48px;        
+  border-radius: 50%;
+  padding: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.google {
+  background: #fff;
+  border: 1px solid #a30027;
+  color: #a30027;
+}
+
+.linkedin {
+  background: #0077b5;
+  color: white;
+}
+
+.social-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Forms ===== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input {
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+input:focus {
+  outline: none;
+  border: 1px solid #a30027;
+  box-shadow: 0 0 8px rgba(230, 57, 70, 0.4);
+}
+
+/* ===== Buttons ===== */
+.submit-btn {
+  background: #a30027;
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: 0.3s;
+}
+
+.submit-btn:hover {
+  background: #c92c3b;
+  transform: translateY(-2px);
+}
+
+.red-btn {
+  background: #a30027;
+}
+
+/* ===== Links ===== */
+.forgot {
+  font-size: 0.95rem;
+  color: #777;
+  text-align: right;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.forgot:hover {
+  color: #a30027;
+  text-decoration: underline;
+}
+
+.toggle-link {
+  color: #a30027;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.toggle-link:hover {
+  text-decoration: underline;
+}
+
+/* ===== Animations ===== */
+.animate {
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .auth-box {
+    padding: 2rem;
+    max-width: 95%;
+  }
+
+  .signup-active {
+    max-width: 95%;
+    padding: 2.2rem;
+  }
+
+  .form-container h2 {
+    font-size: 1.8rem;
+  }
+
+  input, .submit-btn {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-box {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
+
+  .signup-active {
+    padding: 1.8rem;
+  }
+
+  .form-container h2 {
+    font-size: 1.6rem;
+  }
+
+  input, .submit-btn {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}
