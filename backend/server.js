@@ -1,12 +1,14 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db'); // Removed .js extension
+const connectDB = require('./config/db'); 
+const cors = require('cors');
 
 dotenv.config();
 connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 const authRoutes = require('./routes/authroutes');
 console.log("Loaded Auth Routes:", authRoutes);
 app.use('/api/auth', authRoutes);
