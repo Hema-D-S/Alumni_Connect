@@ -1,54 +1,60 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
-import {
-  FaHome,
-  FaSearch,
-  FaBell,
-  FaCommentDots,
-  FaUser,
-  FaBullhorn,
-  FaBriefcase,
-  FaCog,
-} from "react-icons/fa";
 
 const Dashboard = () => {
+  const [user, setUser] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [firstnameInput, setFirstnameInput] = useState("");
+
+  // Fetch logged-in user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await fetch("http://localhost:5000/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data.user);
+        } else {
+          console.error("Profile fetch error:", data.msg);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
         <div className="profile">
           <img src="https://via.placeholder.com/80" alt="Profile" />
-          <h2 className="name">Alexander Tunisna</h2>
-          <p className="username">@tunisna_dev</p>
+          <h2 className="name">{user ? user.firstname : "Loading..."}</h2>
+          <p className="username">@{user ? user.username : "..."}</p>
         </div>
 
         <nav className="menu">
-          <a href="#">
-            <i className="fas fa-tachometer-alt"></i> Dashboard
-          </a>
-          <a href="#">
-            <i className="fas fa-search"></i> Find
-          </a>
-          <a href="#">
-            <i className="fas fa-bullhorn"></i> Announcements
-          </a>
-          <a href="#">
-            <i className="fas fa-comments"></i> Chat
-          </a>
-          <a href="#">
-            <i className="fas fa-calendar-alt"></i> Events
-          </a>
-          <a href="#">
-            <i className="fas fa-star"></i> Alumni Highlights
-          </a>
-          <a href="#">
-            <i className="fas fa-award"></i> Students Achievements
-          </a>
+          <a href="#">Dashboard</a>
+          <a href="#">Find</a>
+          <a href="#">Announcements</a>
+          <a href="#">Chat</a>
+          <a href="#">Events</a>
+          <a href="#">Alumni Highlights</a>
+          <a href="#">Students Achievements</a>
         </nav>
 
-        {/* My Profile at bottom */}
         <div className="bottom-profile">
-          <a href="#">
+          <a href="#" onClick={() => setShowProfileModal(true)}>
             <i className="fas fa-user-circle"></i> My Profile
           </a>
         </div>
@@ -116,9 +122,23 @@ const Dashboard = () => {
               <p className="chat-msg">Not too okay.</p>
             </div>
           </div>
-          {/* Add more chats */}
         </div>
       </aside>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Update Profile</h2>
+            <input
+              type="text"
+              value={firstnameInput}
+              onChange={(e) => setFirstnameInput(e.target.value)}
+              placeholder="First Name"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
