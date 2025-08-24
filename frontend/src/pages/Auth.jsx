@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import "./Auth.css";
+import "../styles/Auth.css";
 import { FaGoogle, FaLinkedin } from "react-icons/fa";
 import { signup, signin } from "../services/api";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -14,6 +15,8 @@ const Auth = () => {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({
@@ -40,6 +43,7 @@ const Auth = () => {
         localStorage.setItem("token", res.data.token);
         alert("Google Signup/Login successful");
         console.log(res.data.user);
+        navigate("/dashboard");
       } catch (err) {
         console.error("Google login error:", err);
         alert("Google login failed");
@@ -72,6 +76,7 @@ const Auth = () => {
         localStorage.setItem("token", data.token);
         alert("Signup successful");
         console.log(data.user);
+        navigate("/dashboard");
       } else {
         const data = await signin({
           email: formData.email,
@@ -80,6 +85,7 @@ const Auth = () => {
         localStorage.setItem("token", data.token);
         alert("Login successful");
         console.log(data.user);
+        navigate("/dashboard");
       }
     } catch (err) {
       alert(err.response?.data?.msg || "Error occurred");

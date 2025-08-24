@@ -1,4 +1,6 @@
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
 }
@@ -57,8 +59,14 @@ html, body, #root {
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-50px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .navbar .nav-links {
@@ -77,17 +85,37 @@ html, body, #root {
   animation: fadeSlideIn 0.6s ease forwards;
 }
 
-.navbar .nav-links li:nth-child(1) { animation-delay: 0.6s; }
-.navbar .nav-links li:nth-child(2) { animation-delay: 0.8s; }
-.navbar .nav-links li:nth-child(3) { animation-delay: 1s; }
-.navbar .nav-links li:nth-child(4) { animation-delay: 1.2s; }
-.navbar .nav-links li:nth-child(5) { animation-delay: 1.4s; }
-.navbar .nav-links li:nth-child(6) { animation-delay: 1.6s; }
-.navbar .nav-links li:nth-child(7) { animation-delay: 1.8s; }
+.navbar .nav-links li:nth-child(1) {
+  animation-delay: 0.6s;
+}
+.navbar .nav-links li:nth-child(2) {
+  animation-delay: 0.8s;
+}
+.navbar .nav-links li:nth-child(3) {
+  animation-delay: 1s;
+}
+.navbar .nav-links li:nth-child(4) {
+  animation-delay: 1.2s;
+}
+.navbar .nav-links li:nth-child(5) {
+  animation-delay: 1.4s;
+}
+.navbar .nav-links li:nth-child(6) {
+  animation-delay: 1.6s;
+}
+.navbar .nav-links li:nth-child(7) {
+  animation-delay: 1.8s;
+}
 
 @keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .navbar .nav-links li a {
@@ -156,8 +184,12 @@ html, body, #root {
 }
 
 @keyframes expandBorder {
-  0% { transform: scale(0); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Text overlay animation */
@@ -179,8 +211,14 @@ html, body, #root {
 }
 
 @keyframes slideUp {
-  0% { transform: translateX(-50%) translateY(100%); opacity: 0; }
-  100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  0% {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
 }
 
 .overlay-text h1 {
