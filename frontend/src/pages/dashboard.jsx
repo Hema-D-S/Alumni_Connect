@@ -46,12 +46,8 @@ const Dashboard = () => {
     }
   }, [showProfileModal, user]);
 
-  // Handle profile picture selection
-  const handleProfilePicUpload = (e) => {
-    setProfilePicFile(e.target.files[0]);
-  };
+  const handleProfilePicUpload = (e) => setProfilePicFile(e.target.files[0]);
 
-  // Handle profile update
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem("token");
     const formData = new FormData();
@@ -70,9 +66,9 @@ const Dashboard = () => {
 
       const data = await res.json();
       if (res.ok || data.user) {
-        setUser(data.user); // update sidebar immediately
-        setShowProfileModal(false); // close modal
-        setProfilePicFile(null); // reset file input
+        setUser(data.user);
+        setShowProfileModal(false);
+        setProfilePicFile(null);
       } else {
         console.error("Profile update error:", data.msg);
       }
@@ -82,23 +78,23 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard">
+    <div className="dashboard-wrapper">
       {/* LEFT SIDEBAR */}
-      <aside className="sidebar">
-        <div className="profile">
+      <aside className="dashboard-sidebar">
+        <div className="dashboard-profile">
           <img
             src={
               user?.profilePic
-                ? `http://localhost:5000/uploads/${user.profilePic}`
+                ? `http://localhost:5000/${user.profilePic}`
                 : "https://via.placeholder.com/80"
             }
             alt="Profile"
           />
-          <h2 className="name">{user ? user.firstname : "Loading..."}</h2>
-          <p className="username">@{user ? user.username : "..."}</p>
+          <h2 className="dashboard-name">{user ? user.firstname : "Loading..."}</h2>
+          <p className="dashboard-username">@{user ? user.username : "..."}</p>
         </div>
 
-        <nav className="menu">
+        <nav className="dashboard-menu">
           <a href="#">Dashboard</a>
           <a href="#">Find</a>
           <a href="#">Announcements</a>
@@ -108,7 +104,7 @@ const Dashboard = () => {
           <a href="#">Students Achievements</a>
         </nav>
 
-        <div className="bottom-profile">
+        <div className="dashboard-bottom-profile">
           <a
             href="#"
             onClick={(e) => {
@@ -122,17 +118,17 @@ const Dashboard = () => {
       </aside>
 
       {/* MAIN FEED */}
-      <main className="feed">
-        <header className="topbar">
-          <div className="app-title">Alumni Connect</div>
+      <main className="dashboard-feed">
+        <header className="dashboard-topbar">
+          <div className="dashboard-app-title">Alumni Connect</div>
           <input type="text" placeholder="Search..." />
         </header>
 
-        <div className="feed-scroll">
+        <div className="dashboard-feed-scroll">
           {/* Post Creator */}
-          <div className="create-post">
+          <div className="dashboard-create-post">
             <input type="text" placeholder="Start making your post..." />
-            <div className="actions">
+            <div className="dashboard-actions">
               <button>Upload Image</button>
               <button>Upload File</button>
               <button>Upload Video</button>
@@ -140,23 +136,23 @@ const Dashboard = () => {
           </div>
 
           {/* Example Post */}
-          <div className="post">
-            <div className="post-header">
+          <div className="dashboard-post">
+            <div className="dashboard-post-header">
               <img src="https://via.placeholder.com/40" alt="User" />
               <div>
                 <h3>Robert Nowil</h3>
                 <p>2 hours ago</p>
               </div>
             </div>
-            <p className="post-text">
+            <p className="dashboard-post-text">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit.
             </p>
             <img
               src="https://via.placeholder.com/400x200"
               alt="Post"
-              className="post-image"
+              className="dashboard-post-image"
             />
-            <div className="post-footer">
+            <div className="dashboard-post-footer">
               <span>👍 1.4k Likes</span>
               <span>💬 246 Comments</span>
               <span>↪️ Share</span>
@@ -166,21 +162,21 @@ const Dashboard = () => {
       </main>
 
       {/* RIGHT SIDEBAR */}
-      <aside className="chat">
-        <div className="chat-header">Chats</div>
-        <div className="chat-scroll">
-          <div className="chat-item">
+      <aside className="dashboard-chat">
+        <div className="dashboard-chat-header">Chats</div>
+        <div className="dashboard-chat-scroll">
+          <div className="dashboard-chat-item">
             <img src="https://via.placeholder.com/40" alt="Ariana" />
             <div>
-              <p className="chat-name">Ariana Roman</p>
-              <p className="chat-msg">Okay, Let’s talk more…</p>
+              <p className="dashboard-chat-name">Ariana Roman</p>
+              <p className="dashboard-chat-msg">Okay, Let’s talk more…</p>
             </div>
           </div>
-          <div className="chat-item">
+          <div className="dashboard-chat-item">
             <img src="https://via.placeholder.com/40" alt="Robert" />
             <div>
-              <p className="chat-name">Robert Nowil</p>
-              <p className="chat-msg">Not too okay.</p>
+              <p className="dashboard-chat-name">Robert Nowil</p>
+              <p className="dashboard-chat-msg">Not too okay.</p>
             </div>
           </div>
         </div>
@@ -188,8 +184,8 @@ const Dashboard = () => {
 
       {/* Profile Modal */}
       {showProfileModal && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="dashboard-modal-overlay">
+          <div className="dashboard-modal">
             <h2>Update Profile</h2>
             <input
               type="text"
@@ -217,7 +213,7 @@ const Dashboard = () => {
             />
             <input type="file" onChange={handleProfilePicUpload} />
 
-            <div className="modal-actions">
+            <div className="dashboard-modal-actions">
               <button onClick={handleUpdateProfile}>Save</button>
               <button onClick={() => setShowProfileModal(false)}>Cancel</button>
             </div>

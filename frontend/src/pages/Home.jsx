@@ -6,11 +6,11 @@ function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="home-container">
+    <div className="home-wrapper">
       {/* Navbar */}
-      <nav className="navbar">
-        <div className="logo">Alumni Connect</div>
-        <ul className="nav-links">
+      <nav className="home-navbar">
+        <div className="home-logo">Alumni Connect</div>
+        <ul className="home-nav-links">
           <li>
             <a href="#">Home</a>
           </li>
@@ -30,11 +30,11 @@ function Home() {
             <a href="#">Contact</a>
           </li>
           <li>
-            <a href="#" className="signin-btn">
+            <a href="#" className="home-signin-btn">
               {/* User icon SVG */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                fill="white"
+                fill="currentColor"
                 viewBox="0 0 24 24"
                 width="24"
                 height="24"
@@ -47,14 +47,17 @@ function Home() {
       </nav>
 
       {/* Background */}
-      <div className="bg-image">
-        <div className="border-frame"></div>
+      <div className="home-bg-image">
+        <div className="home-border-frame"></div>
 
         {/* Overlay text */}
-        <div className="overlay-text">
+        <div className="home-overlay-text">
           <h1>University of Visvesvaraya College of Engineering</h1>
           <p>First State Autonomous Institute in Karnataka</p>
-          <button className="get-started-btn" onClick={() => navigate("/auth")}>
+          <button
+            className="home-get-started-btn"
+            onClick={() => navigate("/auth")}
+          >
             Get Started
           </button>
         </div>
