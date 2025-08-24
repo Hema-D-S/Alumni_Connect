@@ -1,89 +1,124 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "../styles/Dashboard.css";
+import {
+  FaHome,
+  FaSearch,
+  FaBell,
+  FaCommentDots,
+  FaUser,
+  FaBullhorn,
+  FaBriefcase,
+  FaCog,
+} from "react-icons/fa";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token"); // ✅ token saved at login
-        if (!token) return;
-
-        const res = await fetch("http://localhost:5000/api/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          setUser(data.user); // ✅ full user object
-        } else {
-          console.error("Profile fetch error:", data.msg);
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
   return (
-    <div className="dashboard-container">
-      {/* NAVBAR */}
-      <nav className="navbar">
-        <div className="logo">AlumniConnect</div>
+    <div className="dashboard">
+      {/* LEFT SIDEBAR */}
+      <aside className="sidebar">
+        <div className="profile">
+          <img src="https://via.placeholder.com/80" alt="Profile" />
+          <h2 className="name">Alexander Tunisna</h2>
+          <p className="username">@tunisna_dev</p>
+        </div>
 
-        <ul className="nav-links">
-          <li>
-            <a href="/home">Home</a>
-          </li>
-          <li>
-            <a href="/discussion">Discussion</a>
-          </li>
-          <li>
-            <a href="/connections">Connections</a>
-          </li>
-          <li>
-            <a href="/events">Events</a>
-          </li>
-        </ul>
+        <nav className="menu">
+          <a href="#">
+            <i className="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a href="#">
+            <i className="fas fa-search"></i> Find
+          </a>
+          <a href="#">
+            <i className="fas fa-bullhorn"></i> Announcements
+          </a>
+          <a href="#">
+            <i className="fas fa-comments"></i> Chat
+          </a>
+          <a href="#">
+            <i className="fas fa-calendar-alt"></i> Events
+          </a>
+          <a href="#">
+            <i className="fas fa-star"></i> Alumni Highlights
+          </a>
+          <a href="#">
+            <i className="fas fa-award"></i> Students Achievements
+          </a>
+        </nav>
 
-        {/* Search + Profile */}
-        <div className="right-section">
-          <input type="text" placeholder="Search..." className="search-bar" />
-          <div className="profile-section">
-            <a href="/profile" className="profile-link">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="white"
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-              >
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-              </svg>
-            </a>
-            <button
-              className="logout-btn"
-              onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/auth";
-              }}
-            >
-              Logout
-            </button>
+        {/* My Profile at bottom */}
+        <div className="bottom-profile">
+          <a href="#">
+            <i className="fas fa-user-circle"></i> My Profile
+          </a>
+        </div>
+      </aside>
+
+      {/* MAIN FEED */}
+      <main className="feed">
+        <header className="topbar">
+          <div className="app-title">Alumni Connect</div>
+          <input type="text" placeholder="Search..." />
+        </header>
+
+        <div className="feed-scroll">
+          {/* Post Creator */}
+          <div className="create-post">
+            <input type="text" placeholder="Start making your post..." />
+            <div className="actions">
+              <button>Upload Image</button>
+              <button>Upload File</button>
+              <button>Upload Video</button>
+            </div>
+          </div>
+
+          {/* Example Post */}
+          <div className="post">
+            <div className="post-header">
+              <img src="https://via.placeholder.com/40" alt="User" />
+              <div>
+                <h3>Robert Nowil</h3>
+                <p>2 hours ago</p>
+              </div>
+            </div>
+            <p className="post-text">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            </p>
+            <img
+              src="https://via.placeholder.com/400x200"
+              alt="Post"
+              className="post-image"
+            />
+            <div className="post-footer">
+              <span>👍 1.4k Likes</span>
+              <span>💬 246 Comments</span>
+              <span>↪️ Share</span>
+            </div>
           </div>
         </div>
-      </nav>
+      </main>
 
-      {/* MAIN CONTENT */}
-      <div className="dashboard-content">
-        <h1>Welcome {user ? user.firstname : ""}</h1>
-        <p>This is the AlumniConnect central hub.</p>
-      </div>
+      {/* RIGHT SIDEBAR */}
+      <aside className="chat">
+        <div className="chat-header">Chats</div>
+        <div className="chat-scroll">
+          <div className="chat-item">
+            <img src="https://via.placeholder.com/40" alt="Ariana" />
+            <div>
+              <p className="chat-name">Ariana Roman</p>
+              <p className="chat-msg">Okay, Let’s talk more…</p>
+            </div>
+          </div>
+          <div className="chat-item">
+            <img src="https://via.placeholder.com/40" alt="Robert" />
+            <div>
+              <p className="chat-name">Robert Nowil</p>
+              <p className="chat-msg">Not too okay.</p>
+            </div>
+          </div>
+          {/* Add more chats */}
+        </div>
+      </aside>
     </div>
   );
 };
