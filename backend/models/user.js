@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     firstname: { type: String, required: false },
     lastname: { type: String, required: false },
+    username: { type: String, required: true, unique: true },
     phone: { type: String, required: false },
     email: {
       type: String,
@@ -11,7 +12,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
-    password: { type: String, required: false }, // empty for Google users
+    password: { type: String, required: false },
     role: {
       type: String,
       enum: ["admin", "student", "alumni"],
@@ -22,7 +23,8 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google", "linkedin"],
       default: "local",
     },
-    googleId: { type: String }, // <-- added to store Google’s unique ID (sub)
+    googleId: { type: String }, // Google unique ID (sub)
+    profilePic: { type: String, default: "" }, // store profile picture URL
   },
   { timestamps: true }
 );
