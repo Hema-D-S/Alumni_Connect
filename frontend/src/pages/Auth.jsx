@@ -25,7 +25,6 @@ const Auth = () => {
         const { access_token } = response;
         if (!access_token) throw new Error("No access token from Google");
 
-        // Get user info from Google
         const userInfo = await axios.get(
           "https://www.googleapis.com/oauth2/v3/userinfo",
           {
@@ -33,16 +32,14 @@ const Auth = () => {
           }
         );
 
-        // Send only required fields (no picture)
         const res = await axios.post("http://localhost:5000/api/auth/google", {
           email: userInfo.data.email,
           name: userInfo.data.name,
-          googleId: userInfo.data.sub, // Google unique ID
+          googleId: userInfo.data.sub,
         });
 
         localStorage.setItem("token", res.data.token);
         alert("Google Signup/Login successful");
-        console.log(res.data.user);
         navigate("/dashboard");
       } catch (err) {
         console.error("Google login error:", err);
@@ -57,7 +54,7 @@ const Auth = () => {
   const loginWithLinkedIn = () => {
     const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
     const redirectUri = import.meta.env.VITE_LINKEDIN_REDIRECT_URI;
-    const state = "randomstring"; // security CSRF token
+    const state = "randomstring";
     const scope = "r_liteprofile r_emailaddress";
 
     window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
@@ -74,8 +71,6 @@ const Auth = () => {
       if (isSignUp) {
         const data = await signup(formData);
         localStorage.setItem("token", data.token);
-        alert("Signup successful");
-        console.log(data.user);
         navigate("/dashboard");
       } else {
         const data = await signin({
@@ -83,8 +78,6 @@ const Auth = () => {
           password: formData.password,
         });
         localStorage.setItem("token", data.token);
-        alert("Login successful");
-        console.log(data.user);
         navigate("/dashboard");
       }
     } catch (err) {
@@ -96,25 +89,31 @@ const Auth = () => {
   return (
     <div className="auth-container">
       <div
-        className={`auth-box ${isSignUp ? "signup-active" : "signin-active"}`}
+        className={`auth-box ${
+          isSignUp ? "auth-signup-active" : "auth-signin-active"
+        }`}
       >
         {/* ===== Sign In Form ===== */}
         {!isSignUp && (
-          <div className="form-container animate">
-            <h2 className="red-text">Sign In</h2>
-            <div className="social-login">
-              <button className="social-btn google" onClick={loginWithGoogle}>
+          <div className="auth-form-container auth-animate">
+            <h2 className="auth-red-text">Sign In</h2>
+            <div className="auth-social-login">
+              <button
+                className="auth-social-btn auth-google"
+                onClick={loginWithGoogle}
+              >
                 <FaGoogle size={22} />
               </button>
               <button
-                className="social-btn linkedin"
+                className="auth-social-btn auth-linkedin"
                 onClick={loginWithLinkedIn}
               >
                 <FaLinkedin size={22} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form className="auth-form" onSubmit={handleSubmit}>
               <input
+                className="auth-input"
                 type="email"
                 name="email"
                 placeholder="Email"
@@ -123,6 +122,7 @@ const Auth = () => {
                 required
               />
               <input
+                className="auth-input"
                 type="password"
                 name="password"
                 placeholder="Password"
@@ -130,14 +130,17 @@ const Auth = () => {
                 onChange={handleChange}
                 required
               />
-              <p className="forgot">Forgot your password?</p>
-              <button className="submit-btn" type="submit">
+              <p className="auth-forgot">Forgot your password?</p>
+              <button className="auth-submit-btn" type="submit">
                 Sign In
               </button>
             </form>
-            <p>
+            <p className="auth-toggle-text">
               Don’t have an account?{" "}
-              <span className="toggle-link" onClick={() => setIsSignUp(true)}>
+              <span
+                className="auth-toggle-link"
+                onClick={() => setIsSignUp(true)}
+              >
                 Create one
               </span>
             </p>
@@ -146,21 +149,25 @@ const Auth = () => {
 
         {/* ===== Sign Up Form ===== */}
         {isSignUp && (
-          <div className="form-container animate">
-            <h2 className="white-text">Create Account</h2>
-            <div className="social-login">
-              <button className="social-btn google" onClick={loginWithGoogle}>
+          <div className="auth-form-container auth-animate">
+            <h2 className="auth-white-text">Create Account</h2>
+            <div className="auth-social-login">
+              <button
+                className="auth-social-btn auth-google"
+                onClick={loginWithGoogle}
+              >
                 <FaGoogle size={22} />
               </button>
               <button
-                className="social-btn linkedin"
+                className="auth-social-btn auth-linkedin"
                 onClick={loginWithLinkedIn}
               >
                 <FaLinkedin size={22} />
               </button>
             </div>
-            <form onSubmit={handleSubmit}>
+            <form className="auth-form" onSubmit={handleSubmit}>
               <input
+                className="auth-input"
                 type="text"
                 name="firstname"
                 placeholder="First Name"
@@ -169,6 +176,7 @@ const Auth = () => {
                 required
               />
               <input
+                className="auth-input"
                 type="text"
                 name="lastname"
                 placeholder="Last Name"
@@ -177,6 +185,7 @@ const Auth = () => {
                 required
               />
               <input
+                className="auth-input"
                 type="tel"
                 name="phone"
                 placeholder="Phone Number"
@@ -185,6 +194,7 @@ const Auth = () => {
                 required
               />
               <input
+                className="auth-input"
                 type="email"
                 name="email"
                 placeholder="Email"
@@ -193,6 +203,7 @@ const Auth = () => {
                 required
               />
               <input
+                className="auth-input"
                 type="password"
                 name="password"
                 placeholder="Password"
@@ -200,13 +211,16 @@ const Auth = () => {
                 onChange={handleChange}
                 required
               />
-              <button className="submit-btn red-btn" type="submit">
+              <button className="auth-submit-btn auth-red-btn" type="submit">
                 Sign Up
               </button>
             </form>
-            <p>
+            <p className="auth-toggle-text">
               Already have an account?{" "}
-              <span className="toggle-link" onClick={() => setIsSignUp(false)}>
+              <span
+                className="auth-toggle-link"
+                onClick={() => setIsSignUp(false)}
+              >
                 Sign In
               </span>
             </p>

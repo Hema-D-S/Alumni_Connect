@@ -7,21 +7,51 @@ const {
   getProfile,
   updateProfile,
 } = require("../controllers/authcontroller");
+
 const {
   authMiddleware,
   authorizeRoles,
 } = require("../middlewares/authmiddleware");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 
+// ------------------ Multer Setup ------------------
+// Ensure uploads folder exists
+const uploadDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+// ------------------ Routes ------------------
+
+// Auth routes
 router.post("/register", register);
 router.post("/login", login);
 router.post("/google", googleAuth);
 router.post("/linkedin", linkedinAuth);
 
+// Profile routes
 router.get("/profile", authMiddleware, getProfile);
-router.put("/profile", authMiddleware, updateProfile);
+router.put(
+  "/profile",
+  authMiddleware,
+  upload.single("profilePic"),
+  updateProfile
+);
 
+// Admin route
 router.get(
   "/admin/dashboard",
   authMiddleware,
@@ -31,6 +61,7 @@ router.get(
   }
 );
 
+// Alumni resources route
 router.get(
   "/alumni/resources",
   authMiddleware,

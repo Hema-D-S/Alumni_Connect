@@ -3,7 +3,20 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // make sure this folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ------------------ HELPER: JWT GENERATOR ------------------
@@ -16,16 +29,8 @@ const generateToken = (user) => {
 // ------------------ REGISTER ------------------
 exports.register = async (req, res) => {
   try {
-    const {
-      firstname,
-      lastname,
-      username,
-      phone,
-      email,
-      password,
-      role,
-      profilePic,
-    } = req.body;
+    const { firstname, lastname, username, phone, email, password, role } =
+      req.body;
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
@@ -43,7 +48,7 @@ exports.register = async (req, res) => {
       password: hashPassword,
       role: role || "student",
       provider: "local",
-      profilePic: profilePic || "",
+      profilePic: "",
     });
 
     const token = generateToken(user);
@@ -99,14 +104,13 @@ exports.googleAuth = async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
-      // Create new user
       user = await User.create({
         firstname: name.split(" ")[0],
         lastname: name.split(" ")[1] || "",
-        username: email.split("@")[0], // use email prefix as default username
+        username: email.split("@")[0],
         phone: "",
         email,
-        password: "", // no password for google users
+        password: "",
         role: "student",
         provider: "google",
         googleId,
@@ -133,7 +137,6 @@ exports.linkedinAuth = async (req, res) => {
     const { code } = req.body;
     if (!code) return res.status(400).json({ msg: "No authorization code" });
 
-    // 1. Exchange code for access token
     const tokenRes = await axios.post(
       "https://www.linkedin.com/oauth/v2/accessToken",
       null,
@@ -150,7 +153,6 @@ exports.linkedinAuth = async (req, res) => {
 
     const accessToken = tokenRes.data.access_token;
 
-    // 2. Fetch user profile
     const profileRes = await axios.get("https://api.linkedin.com/v2/me", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -164,22 +166,20 @@ exports.linkedinAuth = async (req, res) => {
     const lastname = profileRes.data.localizedLastName;
     const email = emailRes.data.elements[0]["handle~"].emailAddress;
 
-    // 3. Create or find user
     let user = await User.findOne({ email });
     if (!user) {
       user = await User.create({
         firstname,
         lastname,
-        username: email.split("@")[0], // default username
+        username: email.split("@")[0],
         email,
-        password: "", // no password for LinkedIn users
+        password: "",
         role: "student",
         provider: "linkedin",
-        profilePic: "", // optional
+        profilePic: "",
       });
     }
 
-    // 4. Generate JWT
     const token = generateToken(user);
 
     res.json({
@@ -199,28 +199,35 @@ exports.getProfile = async (req, res) => {
     const user = await User.findById(req.user.id).select("-password");
     res.json({ user });
   } catch (err) {
+    console.error("Error fetching profile:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
 // ------------------ UPDATE PROFILE ------------------
+// ------------------ UPDATE PROFILE ------------------
 exports.updateProfile = async (req, res) => {
   try {
-    const { firstname, lastname, username, phone, profilePic } = req.body;
+    const { firstname, lastname, username, phone } = req.body;
 
-    const updates = {};
-    if (firstname) updates.firstname = firstname;
-    if (lastname) updates.lastname = lastname;
-    if (username) updates.username = username;
-    if (phone) updates.phone = phone;
-    if (profilePic) updates.profilePic = profilePic;
-
-    const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
-      new: true,
-    }).select("-password");
+    // If you are uploading a profile picture, make sure multer middleware handles `req.file`
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        firstname,
+        lastname,
+        username,
+        phone,
+        profilePic: req.file
+          ? `/uploads/${req.file.filename}`
+          : req.user.profilePic,
+      },
+      { new: true }
+    ).select("-password");
 
     res.json({ user: updatedUser });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };

@@ -23,7 +23,7 @@ const Dashboard = () => {
         });
 
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok || res.user) {
           setUser(data.user);
         } else {
           console.error("Profile fetch error:", data.msg);
@@ -36,7 +36,7 @@ const Dashboard = () => {
     fetchUser();
   }, []);
 
-  // Populate modal inputs when it opens
+  // Populate modal inputs when opened
   useEffect(() => {
     if (showProfileModal && user) {
       setFirstnameInput(user.firstname || "");
@@ -69,9 +69,10 @@ const Dashboard = () => {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-        setShowProfileModal(false);
+      if (res.ok || data.user) {
+        setUser(data.user); // update sidebar immediately
+        setShowProfileModal(false); // close modal
+        setProfilePicFile(null); // reset file input
       } else {
         console.error("Profile update error:", data.msg);
       }
@@ -86,7 +87,11 @@ const Dashboard = () => {
       <aside className="sidebar">
         <div className="profile">
           <img
-            src={user?.profilePic || "https://via.placeholder.com/80"}
+            src={
+              user?.profilePic
+                ? `http://localhost:5000/uploads/${user.profilePic}`
+                : "https://via.placeholder.com/80"
+            }
             alt="Profile"
           />
           <h2 className="name">{user ? user.firstname : "Loading..."}</h2>
@@ -108,7 +113,7 @@ const Dashboard = () => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              setShowProfileModal(true); // open modal
+              setShowProfileModal(true);
             }}
           >
             <i className="fas fa-user-circle"></i> My Profile
