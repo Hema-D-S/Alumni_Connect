@@ -4,6 +4,7 @@ const {
   login,
   googleAuth,
   googleCallback,
+  linkedinAuth,
 } = require("../controllers/authcontroller");
 const {
   authMiddleware,
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/google", googleAuth);
+router.post("/linkedin", linkedinAuth);
 
 router.get("/profile", authMiddleware, (req, res) => {
   res.json({ msg: "Profile fetched successfully", user: req.user });

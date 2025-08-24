@@ -78,7 +78,6 @@ exports.login = async (req, res) => {
 };
 
 // ------------------ GOOGLE LOGIN/SIGNUP ------------------
-// ------------------ GOOGLE LOGIN/SIGNUP ------------------
 exports.googleAuth = async (req, res) => {
   try {
     const { email, name, googleId } = req.body;
@@ -116,3 +115,65 @@ exports.googleAuth = async (req, res) => {
 };
 
 // ------------------ LINKEDIN LOGIN/SIGNUP ------------------
+exports.linkedinAuth = async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ msg: "No authorization code" });
+
+    // 1. Exchange code for access token
+    const tokenRes = await axios.post(
+      "https://www.linkedin.com/oauth/v2/accessToken",
+      null,
+      {
+        params: {
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: process.env.LINKEDIN_REDIRECT_URI,
+          client_id: process.env.LINKEDIN_CLIENT_ID,
+          client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+        },
+      }
+    );
+
+    const accessToken = tokenRes.data.access_token;
+
+    // 2. Fetch user profile
+    const profileRes = await axios.get("https://api.linkedin.com/v2/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const emailRes = await axios.get(
+      "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    const firstname = profileRes.data.localizedFirstName;
+    const lastname = profileRes.data.localizedLastName;
+    const email = emailRes.data.elements[0]["handle~"].emailAddress;
+
+    // 3. Create or find user
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        firstname,
+        lastname,
+        email,
+        password: "", // no password for LinkedIn users
+        role: "student",
+        provider: "linkedin",
+      });
+    }
+
+    // 4. Generate JWT
+    const token = generateToken(user);
+
+    res.json({
+      msg: "LinkedIn login/signup successful",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.error("Error with LinkedIn login:", error.response?.data || error);
+    res.status(500).json({ msg: "LinkedIn login failed" });
+  }
+};

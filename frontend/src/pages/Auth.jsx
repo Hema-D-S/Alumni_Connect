@@ -49,6 +49,16 @@ const Auth = () => {
       alert("Google Login Failed");
     },
   });
+
+  const loginWithLinkedIn = () => {
+    const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
+    const redirectUri = import.meta.env.VITE_LINKEDIN_REDIRECT_URI;
+    const state = "randomstring"; // security CSRF token
+    const scope = "r_liteprofile r_emailaddress";
+
+    window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
+  };
+
   // ---------- Form Handling ----------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -90,7 +100,10 @@ const Auth = () => {
               <button className="social-btn google" onClick={loginWithGoogle}>
                 <FaGoogle size={22} />
               </button>
-              <button className="social-btn linkedin">
+              <button
+                className="social-btn linkedin"
+                onClick={loginWithLinkedIn}
+              >
                 <FaLinkedin size={22} />
               </button>
             </div>
@@ -133,7 +146,10 @@ const Auth = () => {
               <button className="social-btn google" onClick={loginWithGoogle}>
                 <FaGoogle size={22} />
               </button>
-              <button className="social-btn linkedin">
+              <button
+                className="social-btn linkedin"
+                onClick={loginWithLinkedIn}
+              >
                 <FaLinkedin size={22} />
               </button>
             </div>

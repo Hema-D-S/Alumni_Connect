@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["local", "google"],
+      enum: ["local", "google", "linkedin"],
       default: "local",
     },
     googleId: { type: String }, // <-- added to store Google’s unique ID (sub)
