@@ -3,13 +3,15 @@ const {
   register,
   login,
   googleAuth,
-  googleCallback,
   linkedinAuth,
+  getProfile,
+  updateProfile,
 } = require("../controllers/authcontroller");
 const {
   authMiddleware,
   authorizeRoles,
 } = require("../middlewares/authmiddleware");
+
 const router = express.Router();
 
 router.post("/register", register);
@@ -17,9 +19,8 @@ router.post("/login", login);
 router.post("/google", googleAuth);
 router.post("/linkedin", linkedinAuth);
 
-router.get("/profile", authMiddleware, (req, res) => {
-  res.json({ msg: "Profile fetched successfully", user: req.user });
-});
+router.get("/profile", authMiddleware, getProfile);
+router.put("/profile", authMiddleware, updateProfile);
 
 router.get(
   "/admin/dashboard",
@@ -38,4 +39,5 @@ router.get(
     res.json({ msg: "Exclusive Alumni Resources" });
   }
 );
+
 module.exports = router;

@@ -16,11 +16,20 @@ const generateToken = (user) => {
 // ------------------ REGISTER ------------------
 exports.register = async (req, res) => {
   try {
-    const { firstname, lastname, phone, email, password, role } = req.body;
+    const {
+      firstname,
+      lastname,
+      username,
+      phone,
+      email,
+      password,
+      role,
+      profilePic,
+    } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ msg: "User already exists" });
+      return res.status(400).json({ msg: "Email or Username already exists" });
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
@@ -28,11 +37,13 @@ exports.register = async (req, res) => {
     const user = await User.create({
       firstname,
       lastname,
+      username,
       phone,
       email,
       password: hashPassword,
       role: role || "student",
       provider: "local",
+      profilePic: profilePic || "",
     });
 
     const token = generateToken(user);
@@ -80,7 +91,7 @@ exports.login = async (req, res) => {
 // ------------------ GOOGLE LOGIN/SIGNUP ------------------
 exports.googleAuth = async (req, res) => {
   try {
-    const { email, name, googleId } = req.body;
+    const { email, name, googleId, profilePic } = req.body;
 
     if (!email || !googleId) {
       return res.status(400).json({ msg: "Invalid Google user data" });
@@ -92,12 +103,14 @@ exports.googleAuth = async (req, res) => {
       user = await User.create({
         firstname: name.split(" ")[0],
         lastname: name.split(" ")[1] || "",
+        username: email.split("@")[0], // use email prefix as default username
         phone: "",
         email,
         password: "", // no password for google users
         role: "student",
         provider: "google",
         googleId,
+        profilePic: profilePic || "",
       });
     }
 
@@ -157,10 +170,12 @@ exports.linkedinAuth = async (req, res) => {
       user = await User.create({
         firstname,
         lastname,
+        username: email.split("@")[0], // default username
         email,
         password: "", // no password for LinkedIn users
         role: "student",
         provider: "linkedin",
+        profilePic: "", // optional
       });
     }
 
@@ -175,5 +190,37 @@ exports.linkedinAuth = async (req, res) => {
   } catch (error) {
     console.error("Error with LinkedIn login:", error.response?.data || error);
     res.status(500).json({ msg: "LinkedIn login failed" });
+  }
+};
+
+// ------------------ GET PROFILE ------------------
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json({ user });
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// ------------------ UPDATE PROFILE ------------------
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstname, lastname, username, phone, profilePic } = req.body;
+
+    const updates = {};
+    if (firstname) updates.firstname = firstname;
+    if (lastname) updates.lastname = lastname;
+    if (username) updates.username = username;
+    if (phone) updates.phone = phone;
+    if (profilePic) updates.profilePic = profilePic;
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updates, {
+      new: true,
+    }).select("-password");
+
+    res.json({ user: updatedUser });
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
   }
 };

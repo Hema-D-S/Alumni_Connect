@@ -4,7 +4,12 @@ import "../styles/Dashboard.css";
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+
   const [firstnameInput, setFirstnameInput] = useState("");
+  const [lastnameInput, setLastnameInput] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [profilePicFile, setProfilePicFile] = useState(null);
 
   // Fetch logged-in user
   useEffect(() => {
@@ -14,9 +19,7 @@ const Dashboard = () => {
         if (!token) return;
 
         const res = await fetch("http://localhost:5000/api/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const data = await res.json();
@@ -33,12 +36,59 @@ const Dashboard = () => {
     fetchUser();
   }, []);
 
+  // Populate modal inputs when it opens
+  useEffect(() => {
+    if (showProfileModal && user) {
+      setFirstnameInput(user.firstname || "");
+      setLastnameInput(user.lastname || "");
+      setUsernameInput(user.username || "");
+      setPhoneInput(user.phone || "");
+    }
+  }, [showProfileModal, user]);
+
+  // Handle profile picture selection
+  const handleProfilePicUpload = (e) => {
+    setProfilePicFile(e.target.files[0]);
+  };
+
+  // Handle profile update
+  const handleUpdateProfile = async () => {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("firstname", firstnameInput);
+    formData.append("lastname", lastnameInput);
+    formData.append("username", usernameInput);
+    formData.append("phone", phoneInput);
+    if (profilePicFile) formData.append("profilePic", profilePicFile);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/profile", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data.user);
+        setShowProfileModal(false);
+      } else {
+        console.error("Profile update error:", data.msg);
+      }
+    } catch (err) {
+      console.error("Error updating profile:", err);
+    }
+  };
+
   return (
     <div className="dashboard">
       {/* LEFT SIDEBAR */}
       <aside className="sidebar">
         <div className="profile">
-          <img src="https://via.placeholder.com/80" alt="Profile" />
+          <img
+            src={user?.profilePic || "https://via.placeholder.com/80"}
+            alt="Profile"
+          />
           <h2 className="name">{user ? user.firstname : "Loading..."}</h2>
           <p className="username">@{user ? user.username : "..."}</p>
         </div>
@@ -54,7 +104,13 @@ const Dashboard = () => {
         </nav>
 
         <div className="bottom-profile">
-          <a href="#" onClick={() => setShowProfileModal(true)}>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowProfileModal(true); // open modal
+            }}
+          >
             <i className="fas fa-user-circle"></i> My Profile
           </a>
         </div>
@@ -136,6 +192,30 @@ const Dashboard = () => {
               onChange={(e) => setFirstnameInput(e.target.value)}
               placeholder="First Name"
             />
+            <input
+              type="text"
+              value={lastnameInput}
+              onChange={(e) => setLastnameInput(e.target.value)}
+              placeholder="Last Name"
+            />
+            <input
+              type="text"
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+              placeholder="Username"
+            />
+            <input
+              type="text"
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              placeholder="Phone"
+            />
+            <input type="file" onChange={handleProfilePicUpload} />
+
+            <div className="modal-actions">
+              <button onClick={handleUpdateProfile}>Save</button>
+              <button onClick={() => setShowProfileModal(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
