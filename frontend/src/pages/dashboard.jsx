@@ -1,55 +1,162 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
+import { FaThumbsUp, FaRegComment } from "react-icons/fa"; // ✅ icons
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [newPostText, setNewPostText] = useState("");
+  const [postFile, setPostFile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
+  // Comments modal state
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [activePost, setActivePost] = useState(null);
+  const [newComment, setNewComment] = useState("");
+
+  // Profile states
   const [firstnameInput, setFirstnameInput] = useState("");
   const [lastnameInput, setLastnameInput] = useState("");
   const [usernameInput, setUsernameInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [profilePicFile, setProfilePicFile] = useState(null);
 
+  const token = localStorage.getItem("token");
+
   // Fetch logged-in user
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
         const res = await fetch("http://localhost:5000/api/auth/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         const data = await res.json();
-        if (res.ok || res.user) {
-          setUser(data.user);
-        } else {
-          console.error("Profile fetch error:", data.msg);
-        }
+        if (res.ok) setUser(data.user);
       } catch (err) {
         console.error("Error fetching profile:", err);
       }
     };
+    if (token) fetchUser();
+  }, [token]);
 
-    fetchUser();
-  }, []);
-
-  // Populate modal inputs when opened
-  useEffect(() => {
-    if (showProfileModal && user) {
-      setFirstnameInput(user.firstname || "");
-      setLastnameInput(user.lastname || "");
-      setUsernameInput(user.username || "");
-      setPhoneInput(user.phone || "");
+  // Fetch all posts
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/posts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) setPosts(data.posts || []);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     }
-  }, [showProfileModal, user]);
+  };
 
-  const handleProfilePicUpload = (e) => setProfilePicFile(e.target.files[0]);
+  useEffect(() => {
+    if (token) fetchPosts();
+  }, [token]);
 
+  // Create new post
+  const handleCreatePost = async () => {
+    if (!newPostText && !postFile) return;
+    const formData = new FormData();
+    formData.append("text", newPostText);
+    if (postFile) formData.append("file", postFile);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/posts", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (res.ok) {
+        setNewPostText("");
+        setPostFile(null);
+        fetchPosts();
+      }
+    } catch (err) {
+      console.error("Error creating post:", err);
+    }
+  };
+
+  // Like / Unlike
+  const handleLike = async (postId, liked) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/posts/${
+          liked ? "unlike" : "like"
+        }/${postId}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) fetchPosts();
+    } catch (err) {
+      console.error("Error liking post:", err);
+    }
+  };
+
+  // Open comments modal
+  const openCommentsModal = (post) => {
+    setActivePost(post);
+    setShowCommentsModal(true);
+    setNewComment("");
+  };
+
+  // Add Comment
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !activePost) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/posts/comment/${activePost._id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: newComment }),
+        }
+      );
+      if (res.ok) {
+        setNewComment("");
+        fetchPosts();
+        // Refresh active post comments
+        const updated = posts.find((p) => p._id === activePost._id);
+        setActivePost(updated);
+      }
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  // Delete Comment
+  const handleDeleteComment = async (commentId) => {
+    if (!activePost) return;
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/posts/comment/${activePost._id}/${commentId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        fetchPosts();
+        setActivePost((prev) => ({
+          ...prev,
+          comments: prev.comments.filter((c) => c._id !== commentId),
+        }));
+      }
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
+
+  // Update Profile
   const handleUpdateProfile = async () => {
-    const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("firstname", firstnameInput);
     formData.append("lastname", lastnameInput);
@@ -63,14 +170,10 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-
       const data = await res.json();
-      if (res.ok || data.user) {
+      if (res.ok) {
         setUser(data.user);
         setShowProfileModal(false);
-        setProfilePicFile(null);
-      } else {
-        console.error("Profile update error:", data.msg);
       }
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -90,7 +193,9 @@ const Dashboard = () => {
             }
             alt="Profile"
           />
-          <h2 className="dashboard-name">{user ? user.firstname : "Loading..."}</h2>
+          <h2 className="dashboard-name">
+            {user ? user.firstname : "Loading..."}
+          </h2>
           <p className="dashboard-username">@{user ? user.username : "..."}</p>
         </div>
 
@@ -127,37 +232,92 @@ const Dashboard = () => {
         <div className="dashboard-feed-scroll">
           {/* Post Creator */}
           <div className="dashboard-create-post">
-            <input type="text" placeholder="Start making your post..." />
+            <textarea
+              value={newPostText}
+              onChange={(e) => setNewPostText(e.target.value)}
+              placeholder="Start making your post..."
+            />
+            <input
+              type="file"
+              onChange={(e) => setPostFile(e.target.files[0])}
+            />
             <div className="dashboard-actions">
-              <button>Upload Image</button>
-              <button>Upload File</button>
-              <button>Upload Video</button>
+              <button onClick={handleCreatePost}>Post</button>
             </div>
           </div>
 
-          {/* Example Post */}
-          <div className="dashboard-post">
-            <div className="dashboard-post-header">
-              <img src="https://via.placeholder.com/40" alt="User" />
-              <div>
-                <h3>Robert Nowil</h3>
-                <p>2 hours ago</p>
+          {/* Posts */}
+          {posts.length === 0 ? (
+            <p>No posts yet.</p>
+          ) : (
+            posts.map((post) => (
+              <div key={post._id} className="dashboard-post">
+                <div className="dashboard-post-header">
+                  <img
+                    src={
+                      user?.profilePic
+                        ? `http://localhost:5000/${user.profilePic}`
+                        : "https://via.placeholder.com/80"
+                    }
+                    alt="Profile"
+                  />
+                  <div>
+                    <h3>{post.user?.firstname || "Unknown User"}</h3>
+                    <p>{new Date(post.createdAt).toLocaleString()}</p>
+                  </div>
+                </div>
+                <p className="dashboard-post-text">{post.text}</p>
+                {post.file && (
+                  <>
+                    {post.file.endsWith(".pdf") ? (
+                      <a
+                        href={`http://localhost:5000/${post.file}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="dashboard-post-file"
+                      >
+                        📄 View PDF
+                      </a>
+                    ) : (
+                      <img
+                        src={`http://localhost:5000/${post.file}`}
+                        alt="Post"
+                        className="dashboard-post-image"
+                      />
+                    )}
+                  </>
+                )}
+
+                <div className="dashboard-post-footer">
+                  <span
+                    onClick={() =>
+                      handleLike(post._id, post.likes?.includes(user?._id))
+                    }
+                    style={{
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
+                    <FaThumbsUp /> {post.likes?.length || 0}
+                  </span>
+                  <span
+                    onClick={() => openCommentsModal(post)}
+                    style={{
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      marginLeft: "15px",
+                    }}
+                  >
+                    <FaRegComment /> {post.comments?.length || 0}
+                  </span>
+                </div>
               </div>
-            </div>
-            <p className="dashboard-post-text">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            </p>
-            <img
-              src="https://via.placeholder.com/400x200"
-              alt="Post"
-              className="dashboard-post-image"
-            />
-            <div className="dashboard-post-footer">
-              <span>👍 1.4k Likes</span>
-              <span>💬 246 Comments</span>
-              <span>↪️ Share</span>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </main>
 
@@ -211,11 +371,55 @@ const Dashboard = () => {
               onChange={(e) => setPhoneInput(e.target.value)}
               placeholder="Phone"
             />
-            <input type="file" onChange={handleProfilePicUpload} />
+            <input
+              type="file"
+              onChange={(e) => setProfilePicFile(e.target.files[0])}
+            />
 
             <div className="dashboard-modal-actions">
               <button onClick={handleUpdateProfile}>Save</button>
               <button onClick={() => setShowProfileModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comments Modal */}
+      {showCommentsModal && activePost && (
+        <div className="dashboard-modal-overlay">
+          <div className="dashboard-modal">
+            <h2>Comments</h2>
+            <p>{activePost.text}</p>
+
+            <div className="comments-list">
+              {activePost.comments?.length > 0 ? (
+                activePost.comments.map((c) => (
+                  <div key={c._id} className="dashboard-comment">
+                    <strong>{c.user?.firstname || "Anon"}:</strong> {c.text}
+                    {c.user?._id === user?._id && (
+                      <button onClick={() => handleDeleteComment(c._id)}>
+                        ❌
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p>No comments yet</p>
+              )}
+            </div>
+
+            <div className="dashboard-add-comment">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+              />
+              <button onClick={handleAddComment}>Send</button>
+            </div>
+
+            <div className="dashboard-modal-actions">
+              <button onClick={() => setShowCommentsModal(false)}>Close</button>
             </div>
           </div>
         </div>

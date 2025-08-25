@@ -208,26 +208,29 @@ exports.getProfile = async (req, res) => {
 // ------------------ UPDATE PROFILE ------------------
 exports.updateProfile = async (req, res) => {
   try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    // ✅ Extract values from req.body
     const { firstname, lastname, username, phone } = req.body;
 
-    // If you are uploading a profile picture, make sure multer middleware handles `req.file`
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        firstname,
-        lastname,
-        username,
-        phone,
-        profilePic: req.file
-          ? `/uploads/${req.file.filename}`
-          : req.user.profilePic,
-      },
-      { new: true }
-    ).select("-password");
+    // update basic fields if provided
+    if (firstname) user.firstname = firstname;
+    if (lastname) user.lastname = lastname;
+    if (username) user.username = username;
+    if (phone) user.phone = phone;
 
-    res.json({ user: updatedUser });
+    // update profile pic only if a new one is uploaded
+    if (req.file) {
+      user.profilePic = `uploads/${req.file.filename}`;
+    }
+
+    await user.save();
+
+    // return latest user object
+    res.json({ user });
   } catch (err) {
-    console.error(err);
+    console.error("Error updating profile:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };

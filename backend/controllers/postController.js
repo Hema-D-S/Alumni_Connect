@@ -10,11 +10,17 @@ const createPost = async (req, res) => {
     const newPost = new Post({
       user: req.user.id,
       text,
-      file: req.file ? req.file.path : undefined, // optional file/image/video
+      file: req.file ? `uploads/${req.file.filename}` : undefined,
     });
 
     const savedPost = await newPost.save();
-    res.status(201).json({ post: savedPost });
+
+    //  Populate user with profilePic before sending response
+    const populatedPost = await Post.findById(savedPost._id)
+      .populate("user", "firstname lastname username profilePic")
+      .populate("comments.user", "firstname lastname username profilePic");
+
+    res.status(201).json({ post: populatedPost });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -56,15 +62,21 @@ const getPostById = async (req, res) => {
 // ---------------- UPDATE POST ----------------
 const updatePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    let post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: "Post not found" });
     if (post.user.toString() !== req.user.id)
       return res.status(403).json({ msg: "Not authorized" });
 
     post.text = req.body.text || post.text;
-    if (req.file) post.file = req.file.path; // optional update file
+    if (req.file) post.file = `uploads/${req.file.filename}`;
 
     await post.save();
+
+    post = await post.populate(
+      "user",
+      "firstname lastname username profilePic"
+    );
+
     res.json({ post });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -136,6 +148,11 @@ const addComment = async (req, res) => {
     post.comments.push(comment);
     await post.save();
 
+    await post.populate(
+      "comments.user",
+      "firstname lastname username profilePic"
+    );
+
     res.status(200).json({ msg: "Comment added", comments: post.comments });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -166,6 +183,11 @@ const deleteComment = async (req, res) => {
     // Remove comment
     post.comments = post.comments.filter((c) => c._id.toString() !== commentId);
     await post.save();
+
+    await post.populate(
+      "comments.user",
+      "firstname lastname username profilePic"
+    );
 
     res.status(200).json({ msg: "Comment deleted", comments: post.comments });
   } catch (err) {

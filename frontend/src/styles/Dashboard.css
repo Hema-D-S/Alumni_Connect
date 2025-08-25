@@ -22,9 +22,10 @@
   margin-bottom: 20px;
 }
 .dashboard-profile img {
-  border-radius: 50%;
-  width: 80px;
+  border-radius: 50%; /* keeps it round */
+  width: 80px; /* fixed size as before */
   height: 80px;
+  object-fit: cover; /* fills the square without stretching */
   transition: transform 0.3s ease;
 }
 .dashboard-profile img:hover {
@@ -40,14 +41,12 @@
   color: gray;
 }
 
-.dashboard-menu,
-.dashboard-pro-section {
+.dashboard-menu {
   display: flex;
   flex-direction: column;
   margin-top: 10px;
 }
-.dashboard-menu a,
-.dashboard-pro-section a {
+.dashboard-menu a {
   padding: 10px;
   border-radius: 6px;
   text-decoration: none;
@@ -58,8 +57,7 @@
   gap: 8px;
   transition: background 0.3s, transform 0.2s, color 0.3s;
 }
-.dashboard-menu a:hover,
-.dashboard-pro-section a:hover {
+.dashboard-menu a:hover {
   background: #a30027;
   color: #fff;
   transform: translateX(4px);
@@ -154,17 +152,25 @@
   margin-bottom: 10px;
 }
 .dashboard-post-header img {
-  border-radius: 50%;
+  border-radius: 50%; /* round */
+  width: 40px; /* small size for posts */
+  height: 40px;
+  object-fit: cover; /* fills the circle nicely */
   margin-right: 10px;
+  border: 2px solid #f1f1f1;
 }
 .dashboard-post-text {
   margin: 10px 0;
 }
 .dashboard-post-image {
-  width: 100%;
+  width: 100%; /* fills the post container width */
+  max-height: 500px; /* adjust as needed for screen */
+  aspect-ratio: 1 / 1; /* forces square ratio */
+  object-fit: cover; /* crops excess but fills the square */
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
 .dashboard-post-footer {
   display: flex;
   justify-content: space-between;
@@ -215,30 +221,22 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* RESPONSIVENESS */
-@media (max-width: 1024px) {
-  .dashboard-sidebar { width: 200px; }
-  .dashboard-chat { width: 220px; }
-  .dashboard-topbar input { width: 200px; }
-}
-
-@media (max-width: 768px) {
-  .dashboard-sidebar { display: none; }
-  .dashboard-chat { display: none; }
-  .dashboard-feed { flex: 1; }
-  .dashboard-topbar input { width: 100%; }
-}
-
-@media (max-width: 480px) {
-  .dashboard-topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Bottom Profile */
@@ -344,7 +342,40 @@
   transform: scale(1.05);
 }
 
-/* Responsive Modal */
+/* RESPONSIVENESS */
+@media (max-width: 1024px) {
+  .dashboard-sidebar {
+    width: 200px;
+  }
+  .dashboard-chat {
+    width: 220px;
+  }
+  .dashboard-topbar input {
+    width: 200px;
+  }
+}
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    display: none;
+  }
+  .dashboard-chat {
+    display: none;
+  }
+  .dashboard-feed {
+    flex: 1;
+  }
+  .dashboard-topbar input {
+    width: 100%;
+  }
+}
 @media (max-width: 480px) {
-  .dashboard-modal { width: 90%; padding: 20px; }
+  .dashboard-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .dashboard-modal {
+    width: 90%;
+    padding: 20px;
+  }
 }
