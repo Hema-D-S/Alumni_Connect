@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
-import { FaThumbsUp, FaRegComment } from "react-icons/fa"; // ✅ icons
+import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [newPostText, setNewPostText] = useState("");
   const [postFile, setPostFile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState(null); // for 3-dot menu
 
   // Comments modal state
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -123,7 +124,6 @@ const Dashboard = () => {
       if (res.ok) {
         setNewComment("");
         fetchPosts();
-        // Refresh active post comments
         const updated = posts.find((p) => p._id === activePost._id);
         setActivePost(updated);
       }
@@ -177,6 +177,20 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error("Error updating profile:", err);
+    }
+  };
+
+  // Handle post delete
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) fetchPosts();
+    } catch (err) {
+      console.error("Error deleting post:", err);
     }
   };
 
@@ -250,73 +264,106 @@ const Dashboard = () => {
           {posts.length === 0 ? (
             <p>No posts yet.</p>
           ) : (
-            posts.map((post) => (
-              <div key={post._id} className="dashboard-post">
-                <div className="dashboard-post-header">
-                  <img
-                    src={
-                      user?.profilePic
-                        ? `http://localhost:5000/${user.profilePic}`
-                        : "https://via.placeholder.com/80"
-                    }
-                    alt="Profile"
-                  />
-                  <div>
-                    <h3>{post.user?.firstname || "Unknown User"}</h3>
-                    <p>{new Date(post.createdAt).toLocaleString()}</p>
+            posts.map((post) => {
+              const isOwner =
+                user?._id === post.user?._id || user?.role === "admin";
+              return (
+                <div key={post._id} className="dashboard-post">
+                  <div className="dashboard-post-header">
+                    <img
+                      src={
+                        post.user?.profilePic
+                          ? `http://localhost:5000/${post.user.profilePic}`
+                          : "https://via.placeholder.com/40"
+                      }
+                      alt="Profile"
+                    />
+                    <div>
+                      <h3>{post.user?.firstname || "Unknown User"}</h3>
+                      <p>{new Date(post.createdAt).toLocaleString()}</p>
+                    </div>
+
+                    {/* Vertical 3-dot menu */}
+                    {isOwner && (
+                      <div className="post-menu-container">
+                        <FaEllipsisV
+                          className="post-menu-icon"
+                          onClick={() =>
+                            setMenuOpenId(
+                              menuOpenId === post._id ? null : post._id
+                            )
+                          }
+                        />
+                        {menuOpenId === post._id && (
+                          <div className="post-menu-dropdown">
+                            <button
+                              onClick={() =>
+                                window.alert("Redirect to edit post page")
+                              }
+                            >
+                              Edit
+                            </button>
+                            <button onClick={() => handleDeletePost(post._id)}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="dashboard-post-text">{post.text}</p>
+                  {post.file && (
+                    <>
+                      {post.file.endsWith(".pdf") ? (
+                        <a
+                          href={`http://localhost:5000/${post.file}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="dashboard-post-file"
+                        >
+                          📄 View PDF
+                        </a>
+                      ) : (
+                        <img
+                          src={`http://localhost:5000/${post.file}`}
+                          alt="Post"
+                          className="dashboard-post-image"
+                        />
+                      )}
+                    </>
+                  )}
+
+                  <div className="dashboard-post-footer">
+                    <span
+                      onClick={() =>
+                        handleLike(post._id, post.likes?.includes(user?._id))
+                      }
+                      style={{
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                      }}
+                    >
+                      <FaThumbsUp /> {post.likes?.length || 0}
+                    </span>
+                    <span
+                      onClick={() => openCommentsModal(post)}
+                      style={{
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        marginLeft: "15px",
+                      }}
+                    >
+                      <FaRegComment /> {post.comments?.length || 0}
+                    </span>
                   </div>
                 </div>
-                <p className="dashboard-post-text">{post.text}</p>
-                {post.file && (
-                  <>
-                    {post.file.endsWith(".pdf") ? (
-                      <a
-                        href={`http://localhost:5000/${post.file}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="dashboard-post-file"
-                      >
-                        📄 View PDF
-                      </a>
-                    ) : (
-                      <img
-                        src={`http://localhost:5000/${post.file}`}
-                        alt="Post"
-                        className="dashboard-post-image"
-                      />
-                    )}
-                  </>
-                )}
-
-                <div className="dashboard-post-footer">
-                  <span
-                    onClick={() =>
-                      handleLike(post._id, post.likes?.includes(user?._id))
-                    }
-                    style={{
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
-                    }}
-                  >
-                    <FaThumbsUp /> {post.likes?.length || 0}
-                  </span>
-                  <span
-                    onClick={() => openCommentsModal(post)}
-                    style={{
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
-                      marginLeft: "15px",
-                    }}
-                  >
-                    <FaRegComment /> {post.comments?.length || 0}
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </main>
