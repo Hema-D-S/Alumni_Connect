@@ -16,9 +16,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const authRoutes = require("./routes/authroutes");
 const postRoutes = require("./routes/postRoutes");
+const findUsersRoutes = require("./routes/FindUsers");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/findusers", findUsersRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

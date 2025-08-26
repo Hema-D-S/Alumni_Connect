@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
 import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import LeftSidebar from "../components/LeftSidebar";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -249,46 +251,10 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* LEFT SIDEBAR */}
-      <aside className="dashboard-sidebar">
-        <div className="dashboard-profile">
-          <img
-            src={
-              user?.profilePic
-                ? `http://localhost:5000/${user.profilePic}`
-                : "https://via.placeholder.com/80"
-            }
-            alt="Profile"
-          />
-          <h2 className="dashboard-name">
-            {user ? user.firstname : "Loading..."}
-          </h2>
-          <p className="dashboard-username">@{user ? user.username : "..."}</p>
-        </div>
-
-        <nav className="dashboard-menu">
-          <a href="#">Dashboard</a>
-          <a href="#">Find</a>
-          <a href="#">Announcements</a>
-          <a href="#">Chat</a>
-          <a href="#">Events</a>
-          <a href="#">Alumni Highlights</a>
-          <a href="#">Students Achievements</a>
-        </nav>
-
-        <div className="dashboard-bottom-profile">
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowProfileModal(true);
-            }}
-          >
-            <i className="fas fa-user-circle"></i> My Profile
-          </a>
-        </div>
-      </aside>
-
+      <LeftSidebar
+        user={user}
+        openProfileModal={() => setShowProfileModal(true)}
+      />
       {/* MAIN FEED */}
       <main className="dashboard-feed">
         <header className="dashboard-topbar">

@@ -1,0 +1,252 @@
+/* ---------- GENERAL WRAPPER ---------- */
+.findusers-wrapper {
+  display: flex;
+  min-height: 100vh;
+  font-family: "Arial", sans-serif;
+  background: #f9f9f9;
+}
+
+/* ---------- LEFT SIDEBAR ---------- */
+.findusers-sidebar {
+  width: 250px;
+  background-color: #a30027;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.findusers-logo {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.findusers-sidebar nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.findusers-sidebar nav ul li {
+  margin-bottom: 15px;
+}
+
+.findusers-sidebar nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.findusers-sidebar nav ul li.active a {
+  text-decoration: underline;
+}
+
+.findusers-profile-link {
+  margin-top: auto;
+}
+
+.findusers-profile-link a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* ---------- TOPBAR ---------- */
+.findusers-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #a30027;
+  color: white;
+  padding: 15px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.findusers-app-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.findusers-topbar input {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  outline: none;
+}
+
+/* ---------- MAIN CONTENT ---------- */
+.findusers-main {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.findusers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.findusers-card {
+  background: white;
+  border: 2px solid #a30027;
+  border-radius: 12px;
+  padding: 15px;
+  width: 200px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.findusers-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.findusers-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.findusers-connect-btn {
+  padding: 8px 12px;
+  border: 2px solid #a30027;
+  border-radius: 6px;
+  background: white;
+  color: #a30027;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.findusers-connect-btn:hover {
+  background: #a30027;
+  color: white;
+}
+
+.connected-card .findusers-connect-btn {
+  background: #a30027;
+  color: white;
+}
+
+/* ---------- RIGHT SIDEBAR ---------- */
+.findusers-rightbar {
+  width: 220px;
+  background: #fff;
+  padding: 20px;
+  border-left: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.findusers-suggested-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.findusers-suggested-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ---------- USER PROFILE MODAL ---------- */
+.findusers-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+  z-index: 100;
+}
+
+.findusers-modal {
+  background: white;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  padding: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalFadeIn 0.4s ease;
+}
+
+.findusers-close {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.findusers-posts {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.findusers-post img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+/* ---------- ANIMATIONS ---------- */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media screen and (max-width: 1200px) {
+  .findusers-wrapper {
+    flex-direction: column;
+  }
+  .findusers-sidebar,
+  .findusers-rightbar {
+    width: 100%;
+  }
+  .findusers-topbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .findusers-list {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .findusers-card {
+    width: 45%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .findusers-card {
+    width: 100%;
+  }
+}

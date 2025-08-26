@@ -23,10 +23,24 @@ const userSchema = new mongoose.Schema(
       enum: ["local", "google", "linkedin"],
       default: "local",
     },
-    googleId: { type: String }, // Google unique ID (sub)
-    profilePic: { type: String, default: "" }, // store profile picture URL
+    googleId: { type: String },
+    profilePic: { type: String, default: "" },
+    batch: { type: Number, required: true },
+    sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    receivedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    connections: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
+
   { timestamps: true }
 );
+userSchema.pre("save", function (next) {
+  const currentYear = new Date().getFullYear();
+  if (this.batch < currentYear) {
+    this.role = "alumni";
+  } else if (this.batch >= currentYear) {
+    this.role = "student";
+  }
+  next();
+});
 
 module.exports = mongoose.model("User", userSchema);

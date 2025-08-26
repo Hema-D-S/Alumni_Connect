@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
 const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -26,11 +25,23 @@ const generateToken = (user) => {
   });
 };
 
+// ------------------ HELPER: Determine Role by Batch ------------------
+const determineRole = (batch) => {
+  const currentYear = new Date().getFullYear();
+  return batch < currentYear ? "alumni" : "student";
+};
+
 // ------------------ REGISTER ------------------
 exports.register = async (req, res) => {
   try {
-    const { firstname, lastname, username, phone, email, password, role } =
+    const { firstname, lastname, username, phone, email, password, batch } =
       req.body;
+
+    if (!batch || isNaN(batch)) {
+      return res
+        .status(400)
+        .json({ msg: "Graduating batch is required and must be a number" });
+    }
 
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
@@ -46,9 +57,9 @@ exports.register = async (req, res) => {
       phone,
       email,
       password: hashPassword,
-      role: role || "student",
+      batch,
+      role: determineRole(batch),
       provider: "local",
-      profilePic: "",
     });
 
     const token = generateToken(user);
@@ -96,10 +107,16 @@ exports.login = async (req, res) => {
 // ------------------ GOOGLE LOGIN/SIGNUP ------------------
 exports.googleAuth = async (req, res) => {
   try {
-    const { email, name, googleId, profilePic } = req.body;
+    const { email, name, googleId, profilePic, batch } = req.body;
 
     if (!email || !googleId) {
       return res.status(400).json({ msg: "Invalid Google user data" });
+    }
+
+    if (!batch || isNaN(batch)) {
+      return res
+        .status(400)
+        .json({ msg: "Graduating batch is required and must be a number" });
     }
 
     let user = await User.findOne({ email });
@@ -108,10 +125,10 @@ exports.googleAuth = async (req, res) => {
         firstname: name.split(" ")[0],
         lastname: name.split(" ")[1] || "",
         username: email.split("@")[0],
-        phone: "",
         email,
         password: "",
-        role: "student",
+        batch,
+        role: determineRole(batch),
         provider: "google",
         googleId,
         profilePic: profilePic || "",
@@ -134,8 +151,14 @@ exports.googleAuth = async (req, res) => {
 // ------------------ LINKEDIN LOGIN/SIGNUP ------------------
 exports.linkedinAuth = async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, batch } = req.body;
+
     if (!code) return res.status(400).json({ msg: "No authorization code" });
+    if (!batch || isNaN(batch)) {
+      return res
+        .status(400)
+        .json({ msg: "Graduating batch is required and must be a number" });
+    }
 
     const tokenRes = await axios.post(
       "https://www.linkedin.com/oauth/v2/accessToken",
@@ -174,7 +197,8 @@ exports.linkedinAuth = async (req, res) => {
         username: email.split("@")[0],
         email,
         password: "",
-        role: "student",
+        batch,
+        role: determineRole(batch),
         provider: "linkedin",
         profilePic: "",
       });
@@ -205,29 +229,30 @@ exports.getProfile = async (req, res) => {
 };
 
 // ------------------ UPDATE PROFILE ------------------
-// ------------------ UPDATE PROFILE ------------------
 exports.updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    // ✅ Extract values from req.body
-    const { firstname, lastname, username, phone } = req.body;
+    // Extract values from req.body
+    const { firstname, lastname, username, phone, batch } = req.body;
 
-    // update basic fields if provided
     if (firstname) user.firstname = firstname;
     if (lastname) user.lastname = lastname;
     if (username) user.username = username;
     if (phone) user.phone = phone;
 
-    // update profile pic only if a new one is uploaded
+    if (batch && !isNaN(batch)) {
+      user.batch = batch;
+      user.role = determineRole(batch);
+    }
+
     if (req.file) {
       user.profilePic = `uploads/${req.file.filename}`;
     }
 
     await user.save();
 
-    // return latest user object
     res.json({ user });
   } catch (err) {
     console.error("Error updating profile:", err);
