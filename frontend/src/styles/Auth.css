@@ -4,31 +4,31 @@
   align-items: center;
   height: 100vh;
   background: linear-gradient(135deg, #a30027, #ff758c);
-  padding: 1rem;
+  padding: 0.5rem;
 }
 
 .auth-box {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  padding: 2.5rem;
+  padding: 1.5rem;
   width: 95%;
-  max-width: 420px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  max-width: 400px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   text-align: center;
   transition: all 0.5s ease-in-out;
-  animation: auth-scaleIn 0.6s ease;
+  animation: auth-scaleIn 0.5s ease;
 }
 
 .auth-signup-active {
-  max-width: 500px;
-  padding: 3rem;
+  max-width: 400px;
+  padding: 1.7rem;
 }
 
 .auth-form-container h2 {
-  font-size: 2.2rem;
-  margin-bottom: 1.2rem;
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
   font-weight: 700;
 }
 
@@ -39,25 +39,26 @@
 .auth-white-text {
   color: #fff;
   background: #a30027;
-  padding: 0.6rem 1.2rem;
-  border-radius: 10px;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
 }
 
 .auth-social-login {
   display: flex;
   justify-content: center;
-  gap: 1.2rem;
-  margin: 1.2rem 0;
+  gap: 0.8rem;
+  margin: 0.8rem 0;
 }
 
 .auth-social-btn {
   border: none;
-  width: 48px;
-  height: 48px;
-  padding: 12px;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -73,46 +74,50 @@
 }
 
 .auth-social-btn:hover {
-  transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
-.auth-input {
-  padding: 14px;
+.auth-input,
+.auth-select {
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
   transition: 0.3s;
 }
 
-.auth-input:focus {
+.auth-input:focus,
+.auth-select:focus {
   outline: none;
   border: 1px solid #a30027;
-  box-shadow: 0 0 8px rgba(230, 57, 70, 0.4);
+  box-shadow: 0 0 6px rgba(230, 57, 70, 0.4);
 }
 
 .auth-submit-btn {
   background: #a30027;
   color: white;
-  padding: 14px;
+  padding: 10px;
   border: none;
-  border-radius: 10px;
-  font-size: 1.1rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   transition: 0.3s;
 }
 
 .auth-submit-btn:hover {
   background: #c92c3b;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .auth-red-btn {
@@ -120,10 +125,11 @@
 }
 
 .auth-forgot {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: #777;
   text-align: right;
   cursor: pointer;
+  margin-top: -0.2rem;
   transition: color 0.3s;
 }
 
@@ -136,6 +142,7 @@
   color: #a30027;
   cursor: pointer;
   font-weight: bold;
+  font-size: 0.9rem;
   transition: 0.3s;
 }
 
@@ -144,13 +151,13 @@
 }
 
 .auth-animate {
-  animation: auth-fadeIn 0.6s ease;
+  animation: auth-fadeIn 0.5s ease;
 }
 
 @keyframes auth-fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -160,7 +167,7 @@
 
 @keyframes auth-scaleIn {
   from {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
   }
   to {
@@ -169,46 +176,65 @@
   }
 }
 
+/* ===== Dropdown adjustments ===== */
+.auth-select {
+  background: #fff;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .auth-box {
-    padding: 2rem;
+    padding: 1.2rem;
     max-width: 95%;
   }
 
   .auth-signup-active {
+    padding: 1.4rem;
     max-width: 95%;
-    padding: 2.2rem;
   }
 
   .auth-form-container h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 
   .auth-input,
+  .auth-select,
   .auth-submit-btn {
-    font-size: 1rem;
-    padding: 12px;
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  .auth-social-login {
+    gap: 0.6rem;
   }
 }
 
 @media (max-width: 480px) {
   .auth-box {
-    padding: 1.5rem;
-    border-radius: 15px;
+    padding: 1rem;
+    border-radius: 12px;
   }
 
   .auth-signup-active {
-    padding: 1.8rem;
+    padding: 1.2rem;
   }
 
   .auth-form-container h2 {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
 
   .auth-input,
+  .auth-select,
   .auth-submit-btn {
-    font-size: 0.9rem;
-    padding: 10px;
+    font-size: 0.8rem;
+    padding: 6px;
+  }
+
+  .auth-social-login {
+    gap: 0.5rem;
   }
 }

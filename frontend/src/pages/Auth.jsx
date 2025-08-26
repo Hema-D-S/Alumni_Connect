@@ -11,9 +11,12 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
+    username: "",
     phone: "",
     email: "",
     password: "",
+    role: "student", // default
+    batch: "",
   });
 
   const navigate = useNavigate();
@@ -186,6 +189,15 @@ const Auth = () => {
               />
               <input
                 className="auth-input"
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+              <input
+                className="auth-input"
                 type="tel"
                 name="phone"
                 placeholder="Phone Number"
@@ -208,6 +220,25 @@ const Auth = () => {
                 name="password"
                 placeholder="Password"
                 value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <select
+                className="auth-input"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                required
+              >
+                <option value="student">Student</option>
+                <option value="alumni">Alumni</option>
+              </select>
+              <input
+                className="auth-input"
+                type="text"
+                name="batch"
+                placeholder="Batch (e.g., 2022)"
+                value={formData.batch}
                 onChange={handleChange}
                 required
               />

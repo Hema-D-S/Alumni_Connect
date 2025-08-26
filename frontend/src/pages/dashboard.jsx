@@ -22,6 +22,15 @@ const Dashboard = () => {
   const [phoneInput, setPhoneInput] = useState("");
   const [profilePicFile, setProfilePicFile] = useState(null);
 
+  // Edit post states
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [editingFile, setEditingFile] = useState(null);
+  const [editingFilePreview, setEditingFilePreview] = useState(null);
+
+  // For Search
+  const [searchQuery, setSearchQuery] = useState("");
+
   const token = localStorage.getItem("token");
 
   // Fetch logged-in user
@@ -180,7 +189,35 @@ const Dashboard = () => {
     }
   };
 
-  // Handle post delete
+  // Save Post
+  const handleSavePost = async (postId) => {
+    const formData = new FormData();
+    formData.append("text", editingText);
+    if (editingFile) formData.append("file", editingFile);
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (res.ok) {
+        setEditingPostId(null);
+        setEditingText("");
+        setEditingFile(null);
+        fetchPosts(); // refresh posts
+      } else {
+        const data = await res.json();
+        alert(data.msg || "Failed to update post");
+      }
+    } catch (err) {
+      console.error("Error updating post:", err);
+      alert("Error updating post");
+    }
+  };
+
+  // Delete Post
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
@@ -188,11 +225,27 @@ const Dashboard = () => {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) fetchPosts();
+      if (res.ok) {
+        setPosts((prevPosts) =>
+          prevPosts.filter((post) => post._id !== postId)
+        );
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to delete post");
+      }
     } catch (err) {
       console.error("Error deleting post:", err);
+      alert("Error deleting post");
     }
   };
+
+  // Filter posts by full name search
+  const filteredPosts = posts.filter((post) => {
+    const fullName = `${post.user?.firstname || ""} ${
+      post.user?.lastname || ""
+    }`.toLowerCase();
+    return fullName.includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="dashboard-wrapper">
@@ -240,7 +293,12 @@ const Dashboard = () => {
       <main className="dashboard-feed">
         <header className="dashboard-topbar">
           <div className="dashboard-app-title">Alumni Connect</div>
-          <input type="text" placeholder="Search..." />
+          <input
+            type="text"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </header>
 
         <div className="dashboard-feed-scroll">
@@ -261,14 +319,17 @@ const Dashboard = () => {
           </div>
 
           {/* Posts */}
-          {posts.length === 0 ? (
-            <p>No posts yet.</p>
+          {filteredPosts.length === 0 ? (
+            <p>No posts found.</p>
           ) : (
-            posts.map((post) => {
+            filteredPosts.map((post) => {
               const isOwner =
                 user?._id === post.user?._id || user?.role === "admin";
+              const isEditing = editingPostId === post._id;
+
               return (
                 <div key={post._id} className="dashboard-post">
+                  {/* Post Header */}
                   <div className="dashboard-post-header">
                     <img
                       src={
@@ -283,8 +344,7 @@ const Dashboard = () => {
                       <p>{new Date(post.createdAt).toLocaleString()}</p>
                     </div>
 
-                    {/* Vertical 3-dot menu */}
-                    {isOwner && (
+                    {isOwner && !isEditing && (
                       <div className="post-menu-container">
                         <FaEllipsisV
                           className="post-menu-icon"
@@ -297,9 +357,12 @@ const Dashboard = () => {
                         {menuOpenId === post._id && (
                           <div className="post-menu-dropdown">
                             <button
-                              onClick={() =>
-                                window.alert("Redirect to edit post page")
-                              }
+                              onClick={() => {
+                                setEditingPostId(post._id);
+                                setEditingText(post.text);
+                                setEditingFile(null);
+                                setMenuOpenId(null);
+                              }}
                             >
                               Edit
                             </button>
@@ -312,28 +375,78 @@ const Dashboard = () => {
                     )}
                   </div>
 
-                  <p className="dashboard-post-text">{post.text}</p>
-                  {post.file && (
-                    <>
-                      {post.file.endsWith(".pdf") ? (
-                        <a
-                          href={`http://localhost:5000/${post.file}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="dashboard-post-file"
-                        >
-                          📄 View PDF
-                        </a>
-                      ) : (
-                        <img
-                          src={`http://localhost:5000/${post.file}`}
-                          alt="Post"
-                          className="dashboard-post-image"
-                        />
+                  {/* Post Body */}
+                  {isEditing ? (
+                    <div className="dashboard-edit-post">
+                      <textarea
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        className="dashboard-edit-textarea"
+                      />
+                      <input
+                        type="file"
+                        onChange={(e) => {
+                          setEditingFile(e.target.files[0]);
+                          if (e.target.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) =>
+                              setEditingFilePreview(ev.target.result);
+                            reader.readAsDataURL(e.target.files[0]);
+                          } else setEditingFilePreview(null);
+                        }}
+                      />
+                      {editingFilePreview && (
+                        <div className="dashboard-edit-preview">
+                          {editingFile?.name?.endsWith(".pdf") ? (
+                            <a
+                              href={editingFilePreview}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              📄 Preview PDF
+                            </a>
+                          ) : (
+                            <img
+                              src={editingFilePreview}
+                              alt="Preview"
+                              className="dashboard-edit-image-preview"
+                            />
+                          )}
+                        </div>
                       )}
+                      <div className="dashboard-actions">
+                        <button onClick={() => handleSavePost(post._id)}>
+                          Save
+                        </button>
+                        <button onClick={() => setEditingPostId(null)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="dashboard-post-text">{post.text}</p>
+                      {post.file &&
+                        (post.file.endsWith(".pdf") ? (
+                          <a
+                            href={`http://localhost:5000/${post.file}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="dashboard-post-file"
+                          >
+                            📄 View PDF
+                          </a>
+                        ) : (
+                          <img
+                            src={`http://localhost:5000/${post.file}`}
+                            alt="Post"
+                            className="dashboard-post-image"
+                          />
+                        ))}
                     </>
                   )}
 
+                  {/* Post Footer */}
                   <div className="dashboard-post-footer">
                     <span
                       onClick={() =>
@@ -422,7 +535,6 @@ const Dashboard = () => {
               type="file"
               onChange={(e) => setProfilePicFile(e.target.files[0])}
             />
-
             <div className="dashboard-modal-actions">
               <button onClick={handleUpdateProfile}>Save</button>
               <button onClick={() => setShowProfileModal(false)}>Cancel</button>
@@ -437,7 +549,6 @@ const Dashboard = () => {
           <div className="dashboard-modal">
             <h2>Comments</h2>
             <p>{activePost.text}</p>
-
             <div className="comments-list">
               {activePost.comments?.length > 0 ? (
                 activePost.comments.map((c) => (
@@ -454,7 +565,6 @@ const Dashboard = () => {
                 <p>No comments yet</p>
               )}
             </div>
-
             <div className="dashboard-add-comment">
               <input
                 type="text"
@@ -464,7 +574,6 @@ const Dashboard = () => {
               />
               <button onClick={handleAddComment}>Send</button>
             </div>
-
             <div className="dashboard-modal-actions">
               <button onClick={() => setShowCommentsModal(false)}>Close</button>
             </div>

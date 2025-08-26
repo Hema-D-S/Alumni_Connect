@@ -88,13 +88,16 @@ const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: "Post not found" });
-    if (post.user.toString() !== req.user.id)
+
+    // Only owner or admin
+    if (post.user.toString() !== req.user.id && !req.user.isAdmin)
       return res.status(403).json({ msg: "Not authorized" });
 
-    await post.remove();
-    res.json({ msg: "Post removed" });
+    await Post.deleteOne({ _id: post._id }); // safer than remove
+    res.json({ msg: "Post removed successfully", postId: post._id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 

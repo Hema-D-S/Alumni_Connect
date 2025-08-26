@@ -15,7 +15,7 @@ app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const authRoutes = require("./routes/authroutes");
-const postRoutes = require("./routes/postroutes");
+const postRoutes = require("./routes/postRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
