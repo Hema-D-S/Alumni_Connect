@@ -146,7 +146,7 @@ const FindUsers = () => {
               <h3>
                 {u.firstname} {u.lastname}
               </h3>
-              <p>Batch: {u.graduatingBatch || "N/A"}</p>
+              <p>Batch: {u.batch || "N/A"}</p>
               <p>Role: {u.role}</p>
               <button
                 className={`findusers-connect-btn ${
