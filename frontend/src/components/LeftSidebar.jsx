@@ -25,7 +25,7 @@ const LeftSidebar = ({ user, openProfileModal }) => {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/find">Find</Link>
         <Link to="#">Announcements</Link>
-        <Link to="#">Chat</Link>
+        <Link to="/chat">Chat</Link>
         <Link to="#">Events</Link>
         <Link to="#">Alumni Highlights</Link>
         <Link to="#">Students Achievements</Link>
@@ -36,7 +36,7 @@ const LeftSidebar = ({ user, openProfileModal }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            openProfileModal();
+            openProfileModal(true);
           }}
         >
           <i className="fas fa-user-circle"></i> My Profile

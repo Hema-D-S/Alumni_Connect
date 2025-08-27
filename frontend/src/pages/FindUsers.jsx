@@ -1,95 +1,211 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import LeftSidebar from "../components/LeftSidebar";
+import { FaPaperPlane, FaUserPlus } from "react-icons/fa";
+import io from "socket.io-client";
 import "../styles/FindUsers.css";
+
+// Connect to socket
+const socket = io("http://localhost:5000");
 
 const FindUsers = () => {
   const [users, setUsers] = useState([]);
-  const [connected, setConnected] = useState({});
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [suggested, setSuggested] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Profile modal states (like Dashboard)
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [firstnameInput, setFirstnameInput] = useState("");
-  const [lastnameInput, setLastnameInput] = useState("");
-  const [usernameInput, setUsernameInput] = useState("");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [profilePicFile, setProfilePicFile] = useState(null);
-  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showSentRequests, setShowSentRequests] = useState(false);
+  const [showReceivedRequests, setShowReceivedRequests] = useState(false);
 
   const token = localStorage.getItem("token");
 
+  // Close requests popup when clicking outside
   useEffect(() => {
-    // Fetch all users for Find
+    const handleClickOutside = (e) => {
+      const sentPopup = document.querySelector(".requests-popup.sent");
+      const receivedPopup = document.querySelector(".requests-popup.received");
+
+      if (
+        (showSentRequests && sentPopup && !sentPopup.contains(e.target)) ||
+        (showReceivedRequests &&
+          receivedPopup &&
+          !receivedPopup.contains(e.target))
+      ) {
+        setShowSentRequests(false);
+        setShowReceivedRequests(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showSentRequests, showReceivedRequests]);
+
+  // Fetch users + current user
+  useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/findusers", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUsers(res.data.users);
-        setSuggested(res.data.users.slice(0, 3));
+
+        setUsers(res.data.users || []);
+        setSuggested((res.data.users || []).slice(0, 4));
+        setCurrentUser({
+          ...res.data.currentUser,
+          connections: res.data.currentUser.connections.map(String),
+          sentRequests: res.data.currentUser.sentRequests.map(String),
+          receivedRequests: res.data.currentUser.receivedRequests.map(String),
+        });
+
+        // Register user with socket
+        if (res.data.currentUser?._id) {
+          socket.emit("register", res.data.currentUser._id);
+        }
       } catch (err) {
         console.error("Error fetching users", err);
       }
     };
 
-    // Fetch logged-in user's profile
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(res.data.user);
-      } catch (err) {
-        console.error("Error fetching profile", err);
-      }
-    };
-
     fetchUsers();
-    fetchProfile();
   }, [token]);
 
-  const handleConnect = (userId) => {
-    setConnected((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
+  // Socket event listeners
+  useEffect(() => {
+    if (!currentUser) return;
+
+    socket.on("requestReceived", ({ fromUserId }) => {
+      setCurrentUser((prev) => ({
+        ...prev,
+        receivedRequests: [...prev.receivedRequests, fromUserId.toString()],
+      }));
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id.toString() === fromUserId.toString()
+            ? { ...u, requestStatus: "Pending for Me" }
+            : u
+        )
+      );
+    });
+
+    socket.on("requestAccepted", ({ byUserId }) => {
+      setCurrentUser((prev) => ({
+        ...prev,
+        connections: [...prev.connections, byUserId.toString()],
+        sentRequests: prev.sentRequests.filter(
+          (id) => id !== byUserId.toString()
+        ),
+        receivedRequests: prev.receivedRequests.filter(
+          (id) => id !== byUserId.toString()
+        ),
+      }));
+    });
+
+    socket.on("requestRejected", ({ byUserId }) => {
+      setCurrentUser((prev) => ({
+        ...prev,
+        sentRequests: prev.sentRequests.filter(
+          (id) => id !== byUserId.toString()
+        ),
+      }));
+    });
+
+    return () => {
+      socket.off("requestReceived");
+      socket.off("requestAccepted");
+      socket.off("requestRejected");
+    };
+  }, [currentUser]);
+
+  // --- Handlers ---
+  const handleConnect = async (targetUserId) => {
+    if (!currentUser) return;
+    try {
+      await axios.post(
+        `http://localhost:5000/api/connections/send/${targetUserId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setCurrentUser((prev) => ({
+        ...prev,
+        sentRequests: [...prev.sentRequests, targetUserId.toString()],
+      }));
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user._id.toString() === targetUserId.toString()
+            ? { ...user, requestStatus: "Request Sent" }
+            : user
+        )
+      );
+    } catch (err) {
+      console.error(
+        "Error sending connection request:",
+        err.response?.data || err
+      );
+    }
   };
 
+  const handleAccept = async (userId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/connections/accept/${userId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCurrentUser((prev) => ({
+        ...prev,
+        connections: [...prev.connections, userId.toString()],
+        receivedRequests: prev.receivedRequests.filter(
+          (id) => id !== userId.toString()
+        ),
+      }));
+    } catch (err) {
+      console.error("Error accepting request", err);
+    }
+  };
+
+  const handleReject = async (userId) => {
+    try {
+      await axios.post(
+        `http://localhost:5000/api/connections/reject/${userId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setCurrentUser((prev) => ({
+        ...prev,
+        receivedRequests: prev.receivedRequests.filter(
+          (id) => id !== userId.toString()
+        ),
+      }));
+    } catch (err) {
+      console.error("Error rejecting request", err);
+    }
+  };
+
+  // Connection status
+  const getUserConnectionStatus = (u) => {
+    if (!currentUser) return "Connect";
+    const id = u._id.toString();
+    if (currentUser.connections.includes(id)) return "Connected";
+    if (currentUser.sentRequests.includes(id)) return "Request Sent";
+    if (currentUser.receivedRequests.includes(id)) return "Pending for Me";
+    return "Connect";
+  };
+
+  // Open user profile & posts
   const handleOpenUserProfile = async (user) => {
     try {
       const res = await axios.get(
         `http://localhost:5000/api/posts/user/${user._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUserPosts(res.data.posts);
+      setUserPosts(res.data.posts || []);
       setSelectedUser(user);
     } catch (err) {
       console.error("Error fetching user posts", err);
-    }
-  };
-
-  const handleUpdateProfile = async () => {
-    const formData = new FormData();
-    formData.append("firstname", firstnameInput);
-    formData.append("lastname", lastnameInput);
-    formData.append("username", usernameInput);
-    formData.append("phone", phoneInput);
-    if (profilePicFile) formData.append("profilePic", profilePicFile);
-
-    try {
-      const res = await axios.put(
-        "http://localhost:5000/api/auth/profile",
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setUser(res.data.user);
-      setShowProfileModal(false);
-    } catch (err) {
-      console.error("Error updating profile", err);
     }
   };
 
@@ -101,70 +217,137 @@ const FindUsers = () => {
 
   return (
     <div className="findusers-wrapper">
-      {/* LEFT SIDEBAR */}
-      <LeftSidebar
-        user={user}
-        openProfileModal={() => {
-          setFirstnameInput(user?.firstname || "");
-          setLastnameInput(user?.lastname || "");
-          setUsernameInput(user?.username || "");
-          setPhoneInput(user?.phone || "");
-          setShowProfileModal(true);
-        }}
-      />
+      <LeftSidebar user={currentUser} openProfileModal={() => {}} />
 
-      {/* MAIN CONTENT */}
       <main className="findusers-main">
         <header className="findusers-topbar">
           <div className="findusers-app-title">Connect with People</div>
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="findusers-search-container">
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="request-icons">
+              <FaPaperPlane
+                title="Sent Requests"
+                onClick={() => setShowSentRequests(!showSentRequests)}
+              />
+              <FaUserPlus
+                title="Received Requests"
+                onClick={() => setShowReceivedRequests(!showReceivedRequests)}
+              />
+            </div>
+          </div>
         </header>
 
+        {/* Sent Requests */}
+        {showSentRequests && (
+          <div className="requests-popup">
+            {users
+              .filter((u) =>
+                currentUser?.sentRequests.includes(u._id.toString())
+              )
+              .map((u) => (
+                <div key={u._id} className="request-item">
+                  {u.firstname} {u.lastname} (Pending)
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Received Requests */}
+        {showReceivedRequests && (
+          <div className="requests-popup">
+            {users
+              .filter((u) =>
+                currentUser?.receivedRequests.includes(u._id.toString())
+              )
+              .map((u) => (
+                <div key={u._id} className="request-item">
+                  {u.firstname} {u.lastname}
+                  <button onClick={() => handleAccept(u._id)}>Accept</button>
+                  <button onClick={() => handleReject(u._id)}>Reject</button>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Users List */}
         <div className="findusers-list">
-          {filteredUsers.map((u) => (
-            <div
-              key={u._id}
-              className={`findusers-card ${
-                connected[u._id] ? "connected-card" : ""
-              }`}
-              onClick={() => handleOpenUserProfile(u)}
-            >
-              <img
-                src={
-                  u.profilePic
-                    ? `http://localhost:5000/${u.profilePic}`
-                    : "https://via.placeholder.com/100"
-                }
-                alt="Profile"
-                className="findusers-avatar"
-              />
-              <h3>
-                {u.firstname} {u.lastname}
-              </h3>
-              <p>Batch: {u.batch || "N/A"}</p>
-              <p>Role: {u.role}</p>
-              <button
-                className={`findusers-connect-btn ${
-                  connected[u._id] ? "connected" : ""
+          {filteredUsers.map((u) => {
+            if (currentUser && u._id === currentUser._id) return null;
+            const status = getUserConnectionStatus(u);
+
+            return (
+              <div
+                key={u._id}
+                className={`findusers-card ${
+                  status === "Connected" ? "connected-card" : ""
                 }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleConnect(u._id);
-                }}
+                onClick={() => handleOpenUserProfile(u)}
               >
-                {connected[u._id] ? "Connected" : "Connect"}
-              </button>
-            </div>
-          ))}
+                <img
+                  src={
+                    u.profilePic
+                      ? `http://localhost:5000/${u.profilePic}`
+                      : "https://via.placeholder.com/100"
+                  }
+                  alt="Profile"
+                  className="findusers-avatar"
+                />
+                <h3>
+                  {u.firstname} {u.lastname}
+                </h3>
+                <p>Batch: {u.batch || "N/A"}</p>
+                <p>Role: {u.role}</p>
+                <p>Connections: {u.connections?.length || 0}</p>
+
+                {status === "Pending for Me" ? (
+                  <div className="pending-actions">
+                    <button
+                      className="accept-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAccept(u._id);
+                      }}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="reject-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(u._id);
+                      }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className={`findusers-connect-btn ${
+                      status === "Connected" ? "connected" : ""
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (status === "Connect") handleConnect(u._id);
+                    }}
+                    disabled={
+                      status === "Request Sent" || status === "Connected"
+                    }
+                  >
+                    {status}
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </main>
 
-      {/* RIGHT SIDEBAR */}
+      {/* Suggested People */}
       <aside className="findusers-rightbar">
         <h3>Suggested People</h3>
         {suggested.map((u) => (
@@ -183,12 +366,13 @@ const FindUsers = () => {
                 {u.firstname} {u.lastname}
               </p>
               <span>{u.role}</span>
+              <p>Connections: {u.connections?.length || 0}</p>
             </div>
           </div>
         ))}
       </aside>
 
-      {/* USER PROFILE MODAL */}
+      {/* Profile Modal */}
       {selectedUser && (
         <div className="findusers-modal-overlay">
           <div className="findusers-modal">
@@ -202,7 +386,8 @@ const FindUsers = () => {
               {selectedUser.firstname} {selectedUser.lastname}’s Profile
             </h2>
             <p>
-              <strong>Connections:</strong> 12 (mocked)
+              <strong>Connections:</strong>{" "}
+              {selectedUser.connections?.length || 0}
             </p>
             <h3>Posts</h3>
             <div className="findusers-posts">
@@ -230,47 +415,6 @@ const FindUsers = () => {
                   </div>
                 ))
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* UPDATE PROFILE MODAL (Dashboard style) */}
-      {showProfileModal && user && (
-        <div className="dashboard-modal-overlay">
-          <div className="dashboard-modal">
-            <h2>Update Profile</h2>
-            <input
-              type="text"
-              value={firstnameInput}
-              onChange={(e) => setFirstnameInput(e.target.value)}
-              placeholder="First Name"
-            />
-            <input
-              type="text"
-              value={lastnameInput}
-              onChange={(e) => setLastnameInput(e.target.value)}
-              placeholder="Last Name"
-            />
-            <input
-              type="text"
-              value={usernameInput}
-              onChange={(e) => setUsernameInput(e.target.value)}
-              placeholder="Username"
-            />
-            <input
-              type="text"
-              value={phoneInput}
-              onChange={(e) => setPhoneInput(e.target.value)}
-              placeholder="Phone"
-            />
-            <input
-              type="file"
-              onChange={(e) => setProfilePicFile(e.target.files[0])}
-            />
-            <div className="dashboard-modal-actions">
-              <button onClick={handleUpdateProfile}>Save</button>
-              <button onClick={() => setShowProfileModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
