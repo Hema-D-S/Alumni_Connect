@@ -4,9 +4,11 @@ import LeftSidebar from "../components/LeftSidebar";
 import { io } from "socket.io-client";
 import "../styles/ChatPage.css";
 
+/* ------------------- Decode JWT ------------------- */
 function decodeUserIdFromToken() {
   const token = localStorage.getItem("token");
   if (!token) return null;
+
   try {
     const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -17,7 +19,7 @@ function decodeUserIdFromToken() {
         .join("")
     );
     const payload = JSON.parse(jsonPayload);
-    return payload?.id || null; // your backend signs { id: user._id }
+    return payload?.id || null; // backend signs { id: user._id }
   } catch (e) {
     console.error("Failed to decode JWT:", e);
     return null;
@@ -25,6 +27,7 @@ function decodeUserIdFromToken() {
 }
 
 const ChatPage = () => {
+  /* ------------------- States ------------------- */
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -32,18 +35,21 @@ const ChatPage = () => {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
-  const messagesEndRef = useRef(null);
-  const socketRef = useRef(null);
-
   const [selfId, setSelfId] = useState(
     () => localStorage.getItem("userId") || null
   );
 
+  /* ------------------- Refs ------------------- */
+  const messagesEndRef = useRef(null);
+  const socketRef = useRef(null);
   const selectedUserRef = useRef(null);
+
+  /* ------------------- Update selectedUserRef ------------------- */
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
 
+  /* ------------------- Decode SelfId from token ------------------- */
   useEffect(() => {
     if (!selfId) {
       const decoded = decodeUserIdFromToken();
@@ -54,7 +60,7 @@ const ChatPage = () => {
     }
   }, [selfId]);
 
-  // Socket.IO Setup
+  /* ------------------- Setup Socket.IO ------------------- */
   useEffect(() => {
     socketRef.current = io("http://localhost:5000", {
       transports: ["websocket", "polling"],
@@ -70,12 +76,12 @@ const ChatPage = () => {
       console.log("Socket disconnected")
     );
 
-    // Incoming messages
+    // Receive Message
     socketRef.current.on("receiveMessage", (message) => {
       const su = selectedUserRef.current;
       if (!su) return;
 
-      // Normalize ids
+      // Normalize IDs
       const fromId =
         typeof message.from === "object" ? message.from?._id : message.from;
       const toId =
@@ -90,8 +96,10 @@ const ChatPage = () => {
       if (!involvesCurrentPair) return;
 
       setMessages((prev) => {
+        // Avoid duplicates
         if (message._id && prev.some((m) => m._id === message._id)) return prev;
 
+        // Replace optimistic message with server-confirmed one
         const last = prev[prev.length - 1];
         const msgText = message.text || message.message;
         const lastText = last ? last.text || last.message : null;
@@ -109,8 +117,6 @@ const ChatPage = () => {
 
         return [...prev, message];
       });
-
-      scrollToBottom();
     });
 
     return () => {
@@ -118,6 +124,8 @@ const ChatPage = () => {
       socketRef.current = null;
     };
   }, [selfId]);
+
+  /* ------------------- Join Chat ------------------- */
   useEffect(() => {
     if (socketRef.current && selfId) {
       console.log("Joining chat as:", selfId);
@@ -125,7 +133,7 @@ const ChatPage = () => {
     }
   }, [selfId]);
 
-  // Fetch Connected Users
+  /* ------------------- Fetch Connected Users ------------------- */
   useEffect(() => {
     const fetchConnectedUsers = async () => {
       try {
@@ -138,8 +146,7 @@ const ChatPage = () => {
           ? res.data
           : res.data.connections || [];
 
-        const validUsers = usersArray.filter((user) => user && user._id);
-        setConnectedUsers(validUsers);
+        setConnectedUsers(usersArray.filter((user) => user && user._id));
       } catch (err) {
         console.error("Error fetching connected users:", err);
         setConnectedUsers([]);
@@ -150,7 +157,7 @@ const ChatPage = () => {
     fetchConnectedUsers();
   }, []);
 
-  // Fetch Messages from DB
+  /* ------------------- Fetch Messages ------------------- */
   const fetchMessages = async (user) => {
     if (!user || !user._id) return;
     try {
@@ -162,7 +169,6 @@ const ChatPage = () => {
         }
       );
       setMessages(res.data || []);
-      scrollToBottom();
     } catch (err) {
       console.error("Error fetching messages:", err);
       setMessages([]);
@@ -171,12 +177,21 @@ const ChatPage = () => {
     }
   };
 
+  /* ------------------- Scroll to Bottom after messages update ------------------- */
+  useEffect(() => {
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  /* ------------------- Handle User Click ------------------- */
   const handleUserClick = (user) => {
     if (!user || !user._id) return;
     setSelectedUser(user);
     fetchMessages(user);
   };
 
+  /* ------------------- Handle Send Message ------------------- */
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedUser || !selfId) return;
 
@@ -187,9 +202,9 @@ const ChatPage = () => {
       text,
       timestamp: new Date(),
     };
+
     setMessages((prev) => [...prev, optimisticMessage]);
     setNewMessage("");
-    scrollToBottom();
 
     try {
       socketRef.current?.emit("sendMessage", {
@@ -201,13 +216,11 @@ const ChatPage = () => {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  /* ------------------- Helpers ------------------- */
   const getFromId = (msg) =>
     typeof msg.from === "object" ? msg.from?._id : msg.from;
 
+  /* ------------------- UI ------------------- */
   return (
     <div className="chatpage-wrapper">
       {/* Left Sidebar */}
@@ -220,6 +233,8 @@ const ChatPage = () => {
             <div className="chatpage-header">
               Chat with {selectedUser.firstname} {selectedUser.lastname}
             </div>
+
+            {/* Messages */}
             <div className="chatpage-messages">
               {loadingMessages ? (
                 <p>Loading messages...</p>
@@ -251,6 +266,8 @@ const ChatPage = () => {
               )}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Input */}
             <div className="chatpage-input">
               <input
                 type="text"

@@ -103,6 +103,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/findusers", findUsersRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/messages", require("./routes/chatRoutes"));
 
 // Test route
 app.get("/", (req, res) => res.send("API running..."));

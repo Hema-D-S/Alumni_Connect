@@ -1,15 +1,10 @@
-// controllers/chatController.js
 const Message = require("../models/Message");
-const User = require("../models/user");
 
-// Fetch messages only if users are connected
+// Fetch all messages between current user and another user
 const getMessages = async (req, res) => {
   try {
     const currentUserId = req.user._id;
     const otherUserId = req.params.userId;
-
-    // Fetch current user connections
-    const currentUser = await User.findById(currentUserId);
 
     const messages = await Message.find({
       $or: [

@@ -7,7 +7,6 @@ const router = express.Router();
 // Fetch chat history with a specific user
 router.get("/:userId", authMiddleware, getMessages);
 
-// Optional: keep POST route if you want HTTP fallback (messages still saved in DB)
 router.post("/:userId", authMiddleware, async (req, res) => {
   const { message } = req.body;
   const toUserId = req.params.userId;
@@ -34,6 +33,47 @@ router.post("/:userId", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Error sending message:", err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Edit message
+router.put("/:id", async (req, res) => {
+  try {
+    const { text, userId } = req.body;
+
+    let message = await Message.findById(req.params.id);
+
+    // Only sender can edit
+    if (message.from.toString() !== userId) {
+      return res.status(403).json({ error: "Not authorized to edit" });
+    }
+
+    message.text = text;
+    await message.save();
+
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete message
+router.delete("/:id", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    let message = await Message.findById(req.params.id);
+
+    // Only sender can delete
+    if (message.from.toString() !== userId) {
+      return res.status(403).json({ error: "Not authorized to delete" });
+    }
+
+    await message.deleteOne();
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
