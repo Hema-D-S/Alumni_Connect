@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+const Message = require("./models/Message"); // add at top
 
 dotenv.config();
 connectDB();
@@ -39,6 +40,42 @@ io.on("connection", (socket) => {
     global.onlineUsers.get(userId).push(socket.id);
   });
 
+  // Join chat room for real-time updates (optional)
+  socket.on("joinChat", (userId) => {
+    socket.userId = userId; // store current userId in socket
+    if (!global.onlineUsers.has(userId)) global.onlineUsers.set(userId, []);
+    global.onlineUsers.get(userId).push(socket.id);
+  });
+
+  // Send a message
+  socket.on("sendMessage", async ({ toUserId, message }) => {
+    console.log("sendMessage received:", {
+      from: socket.userId,
+      toUserId,
+      message,
+    });
+    try {
+      // Broadcast to all sockets of the receiver
+      const sockets = global.onlineUsers.get(toUserId) || [];
+      sockets.forEach((id) => {
+        io.to(id).emit("receiveMessage", {
+          from: socket.userId,
+          message,
+          timestamp: new Date(),
+        });
+      });
+
+      // Save message in DB
+      await Message.create({
+        from: socket.userId,
+        to: toUserId,
+        text: message,
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+    }
+  });
+
   // Disconnect cleanup
   socket.on("disconnect", () => {
     for (let [userId, sockets] of global.onlineUsers.entries()) {
@@ -66,12 +103,14 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const authRoutes = require("./routes/authroutes");
 const postRoutes = require("./routes/postRoutes");
 const findUsersRoutes = require("./routes/FindUsers");
-const connectionRoutes = require("./routes/connectionRoutes")(io); // pass io if needed
+const connectionRoutes = require("./routes/connectionRoutes")(io);
+const chatRoutes = require("./routes/chatRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/findusers", findUsersRoutes);
 app.use("/api/connections", connectionRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ---------------- Test Route ----------------
 app.get("/", (req, res) => {
