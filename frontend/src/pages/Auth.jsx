@@ -42,6 +42,7 @@ const Auth = () => {
         });
 
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId", res.data.user._id);
         alert("Google Signup/Login successful");
         navigate("/dashboard");
       } catch (err) {
@@ -74,6 +75,7 @@ const Auth = () => {
       if (isSignUp) {
         const data = await signup(formData);
         localStorage.setItem("token", data.token);
+        localStorage.setItem("userId", data.user._id);
         navigate("/dashboard");
       } else {
         const data = await signin({
@@ -81,6 +83,7 @@ const Auth = () => {
           password: formData.password,
         });
         localStorage.setItem("token", data.token);
+        localStorage.setItem("userId", data.user._id);
         navigate("/dashboard");
       }
     } catch (err) {
@@ -237,7 +240,7 @@ const Auth = () => {
                 className="auth-input"
                 type="text"
                 name="batch"
-                placeholder="Batch (e.g., 2022)"
+                placeholder="Graduating Batch (e.g., 2022)"
                 value={formData.batch}
                 onChange={handleChange}
                 required

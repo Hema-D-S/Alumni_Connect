@@ -11,13 +11,6 @@ const getMessages = async (req, res) => {
     // Fetch current user connections
     const currentUser = await User.findById(currentUserId);
 
-    // Check if the other user is connected
-    if (!currentUser.connections.includes(otherUserId)) {
-      return res
-        .status(403)
-        .json({ msg: "You are not connected with this user" });
-    }
-
     const messages = await Message.find({
       $or: [
         { from: currentUserId, to: otherUserId },

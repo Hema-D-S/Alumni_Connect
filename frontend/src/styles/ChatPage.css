@@ -1,0 +1,163 @@
+/* ---------------- General Wrapper ---------------- */
+.chatpage-wrapper {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+}
+
+/* ---------------- Left Sidebar ---------------- */
+.left-sidebar {
+  width: 250px;
+  background-color: #a30027;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------------- Chat Middle ---------------- */
+.chatpage-middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  background-color: #fff;
+}
+
+/* Chat header */
+.chatpage-header {
+  padding: 15px;
+  font-weight: bold;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Chat messages container */
+.chatpage-messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #f9f9f9;
+}
+
+/* Individual message bubbles */
+.chatpage-message {
+  padding: 10px 15px;
+  border-radius: 20px;
+  max-width: 70%;
+  word-wrap: break-word;
+  position: relative;
+  display: inline-block;
+}
+
+/* Sent messages (owner) */
+.chatpage-message.sent {
+  background-color: #a30027;
+  color: white;
+  align-self: flex-end; /* always right */
+  border-bottom-right-radius: 0;
+}
+
+/* Received messages (other user) */
+.chatpage-message.received {
+  background-color: #e5e5e5;
+  color: black;
+  align-self: flex-start; /* always left */
+  border-bottom-left-radius: 0;
+}
+
+/* Timestamp for messages */
+.chatpage-timestamp {
+  font-size: 10px;
+  color: #555;
+  margin-left: 8px;
+}
+
+/* Chat input area */
+.chatpage-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #f0f0f0;
+}
+
+.chatpage-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+  margin-right: 10px;
+}
+
+.chatpage-input button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background-color: #a30027;
+  color: white;
+  cursor: pointer;
+}
+
+.chatpage-input button:hover {
+  background-color: #8a0020;
+}
+
+/* Placeholder text when no chat is selected */
+.chatpage-placeholder {
+  padding: 20px;
+  text-align: center;
+  color: #555;
+}
+
+/* ---------------- Right Connections ---------------- */
+.chatpage-right {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+  background-color: #fff;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.chatpage-right h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* Each user item */
+.chatpage-user {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s;
+}
+
+.chatpage-user:hover {
+  background-color: #f0f0f0;
+}
+
+/* Selected user highlight */
+.chatpage-user.selected {
+  background-color: #a30027;
+  color: white;
+}
+
+/* User profile image */
+.chatpage-user img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
