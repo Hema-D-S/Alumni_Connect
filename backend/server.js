@@ -88,7 +88,9 @@ app.set("io", io);
 
 // ---------------- Middleware ----------------
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(
+  cors({ origin: "https://alumni-connect-oe7z.vercel.app", credentials: true })
+);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ---------------- Routes ----------------
@@ -109,4 +111,4 @@ app.use("/api/messages", require("./routes/chatRoutes"));
 app.get("/", (req, res) => res.send("API running..."));
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));
+module.exports = server;
