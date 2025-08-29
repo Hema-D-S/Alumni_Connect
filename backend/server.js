@@ -16,7 +16,7 @@ const server = http.createServer(app);
 // ---------------- Socket.IO Setup ----------------
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://alumni-connect-oe7z.vercel.app/",
     methods: ["GET", "POST"],
     credentials: true,
   },
