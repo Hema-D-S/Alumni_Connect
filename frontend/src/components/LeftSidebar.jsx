@@ -24,11 +24,10 @@ const LeftSidebar = ({ user, openProfileModal }) => {
       <nav className="dashboard-menu">
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/find">Find</Link>
-        <Link to="#">Announcements</Link>
         <Link to="/chat">Chat</Link>
-        <Link to="#">Events</Link>
-        <Link to="#">Alumni Highlights</Link>
-        <Link to="#">Students Achievements</Link>
+        <Link to="/mentorshipprograms">Mentorship Programs</Link>
+        <Link to="/alumnihighlights">Alumni Highlights</Link>
+        <Link to="/studentsachievements">Students Achievements</Link>
       </nav>
 
       <div className="dashboard-bottom-profile">

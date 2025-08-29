@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
+import { Link } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate();
@@ -12,25 +13,25 @@ function Home() {
         <div className="home-logo">Alumni Connect</div>
         <ul className="home-nav-links">
           <li>
-            <a href="#">Home</a>
+            <Link to="/auth">Home</Link>
           </li>
           <li>
-            <a href="#">Events</a>
+            <Link to="/auth">Events</Link>
           </li>
           <li>
-            <a href="#">Alumni</a>
+            <Link to="/auth">Alumni</Link>
           </li>
           <li>
-            <a href="#">Research</a>
+            <Link to="/auth">Research</Link>
           </li>
           <li>
-            <a href="#">Campus Life</a>
+            <Link to="/auth">Campus Life</Link>
           </li>
           <li>
-            <a href="#">Contact</a>
+            <Link to="/auth">Contact</Link>
           </li>
           <li>
-            <a href="#" className="home-signin-btn">
+            <Link to="/auth" className="home-signin-btn">
               {/* User icon SVG */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +42,7 @@ function Home() {
               >
                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
               </svg>
-            </a>
+            </Link>
           </li>
         </ul>
       </nav>
