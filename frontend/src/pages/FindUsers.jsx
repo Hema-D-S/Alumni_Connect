@@ -6,7 +6,7 @@ import io from "socket.io-client";
 import "../styles/FindUsers.css";
 
 // Connect to socket
-const socket = io("http://localhost:5000");
+const socket = io("import.meta.env.VITE_API_URL");
 
 const FindUsers = () => {
   const [users, setUsers] = useState([]);
@@ -45,9 +45,12 @@ const FindUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/findusers", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "import.meta.env.VITE_API_URL/api/findusers",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         setUsers(res.data.users || []);
         setSuggested((res.data.users || []).slice(0, 4));
@@ -122,7 +125,7 @@ const FindUsers = () => {
     if (!currentUser) return;
     try {
       await axios.post(
-        `http://localhost:5000/api/connections/send/${targetUserId}`,
+        `import.meta.env.VITE_API_URL/api/connections/send/${targetUserId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -149,7 +152,7 @@ const FindUsers = () => {
   const handleAccept = async (userId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/connections/accept/${userId}`,
+        `import.meta.env.VITE_API_URL/api/connections/accept/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -169,7 +172,7 @@ const FindUsers = () => {
   const handleReject = async (userId) => {
     try {
       await axios.post(
-        `http://localhost:5000/api/connections/reject/${userId}`,
+        `import.meta.env.VITE_API_URL/api/connections/reject/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -199,7 +202,7 @@ const FindUsers = () => {
   const handleOpenUserProfile = async (user) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/posts/user/${user._id}`,
+        `import.meta.env.VITE_API_URL/api/posts/user/${user._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUserPosts(res.data.posts || []);
@@ -291,7 +294,7 @@ const FindUsers = () => {
                 <img
                   src={
                     u.profilePic
-                      ? `http://localhost:5000/${u.profilePic}`
+                      ? `import.meta.env.VITE_API_URL/${u.profilePic}`
                       : "https://via.placeholder.com/100"
                   }
                   alt="Profile"
@@ -355,7 +358,7 @@ const FindUsers = () => {
             <img
               src={
                 u.profilePic
-                  ? `http://localhost:5000/${u.profilePic}`
+                  ? `import.meta.env.VITE_API_URL/${u.profilePic}`
                   : "https://via.placeholder.com/50"
               }
               alt="Profile"
@@ -400,7 +403,7 @@ const FindUsers = () => {
                     {post.file &&
                       (post.file.endsWith(".pdf") ? (
                         <a
-                          href={`http://localhost:5000/${post.file}`}
+                          href={`import.meta.env.VITE_API_URL/${post.file}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -408,7 +411,7 @@ const FindUsers = () => {
                         </a>
                       ) : (
                         <img
-                          src={`http://localhost:5000/${post.file}`}
+                          src={`import.meta.env.VITE_API_URL/${post.file}`}
                           alt="Post"
                         />
                       ))}

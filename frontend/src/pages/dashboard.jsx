@@ -39,9 +39,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          "import.meta.env.VITE_API_URL/api/auth/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const data = await res.json();
         if (res.ok) setUser(data.user);
       } catch (err) {
@@ -54,7 +57,7 @@ const Dashboard = () => {
   // Fetch all posts
   const fetchPosts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/posts", {
+      const res = await fetch("import.meta.env.VITE_API_URL/api/posts", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -76,7 +79,7 @@ const Dashboard = () => {
     if (postFile) formData.append("file", postFile);
 
     try {
-      const res = await fetch("http://localhost:5000/api/posts", {
+      const res = await fetch("import.meta.env.VITE_API_URL/api/posts", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -95,7 +98,7 @@ const Dashboard = () => {
   const handleLike = async (postId, liked) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/${
+        `import.meta.env.VITE_API_URL/api/posts/${
           liked ? "unlike" : "like"
         }/${postId}`,
         {
@@ -122,7 +125,7 @@ const Dashboard = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/comment/${activePost._id}`,
+        `import.meta.env.VITE_API_URL/api/posts/comment/${activePost._id}`,
         {
           method: "POST",
           headers: {
@@ -148,7 +151,7 @@ const Dashboard = () => {
     if (!activePost) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/posts/comment/${activePost._id}/${commentId}`,
+        `import.meta.env.VITE_API_URL/api/posts/comment/${activePost._id}/${commentId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -176,7 +179,7 @@ const Dashboard = () => {
     if (profilePicFile) formData.append("profilePic", profilePicFile);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/profile", {
+      const res = await fetch("import.meta.env.VITE_API_URL/api/auth/profile", {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -198,11 +201,14 @@ const Dashboard = () => {
     if (editingFile) formData.append("file", editingFile);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/posts/${postId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const res = await fetch(
+        `import.meta.env.VITE_API_URL/api/posts/${postId}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
       if (res.ok) {
         setEditingPostId(null);
@@ -223,10 +229,13 @@ const Dashboard = () => {
   const handleDeletePost = async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/posts/${postId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `import.meta.env.VITE_API_URL/api/posts/${postId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         setPosts((prevPosts) =>
           prevPosts.filter((post) => post._id !== postId)
@@ -300,7 +309,7 @@ const Dashboard = () => {
                     <img
                       src={
                         post.user?.profilePic
-                          ? `http://localhost:5000/${post.user.profilePic}`
+                          ? `import.meta.env.VITE_API_URL/${post.user.profilePic}`
                           : "https://via.placeholder.com/40"
                       }
                       alt="Profile"
@@ -395,7 +404,7 @@ const Dashboard = () => {
                       {post.file &&
                         (post.file.endsWith(".pdf") ? (
                           <a
-                            href={`http://localhost:5000/${post.file}`}
+                            href={`import.meta.env.VITE_API_URL/${post.file}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="dashboard-post-file"
@@ -404,7 +413,7 @@ const Dashboard = () => {
                           </a>
                         ) : (
                           <img
-                            src={`http://localhost:5000/${post.file}`}
+                            src={`import.meta.env.VITE_API_URL/${post.file}`}
                             alt="Post"
                             className="dashboard-post-image"
                           />
