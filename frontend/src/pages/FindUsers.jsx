@@ -6,7 +6,7 @@ import io from "socket.io-client";
 import "../styles/FindUsers.css";
 
 // Connect to socket
-const socket = io("import.meta.env.VITE_API_URL");
+const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
 
 const FindUsers = () => {
   const [users, setUsers] = useState([]);
