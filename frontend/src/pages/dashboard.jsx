@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [newPostText, setNewPostText] = useState("");
   const [postFile, setPostFile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [menuOpenId, setMenuOpenId] = useState(null); // for 3-dot menu
+  const [menuOpenId, setMenuOpenId] = useState(null);
 
   // Comments modal state
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -40,7 +40,7 @@ const Dashboard = () => {
     const fetchUser = async () => {
       try {
         const res = await fetch(
-          "import.meta.env.VITE_API_URL/api/auth/profile",
+          `${import.meta.env.VITE_API_URL}/auth/profile`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -57,7 +57,7 @@ const Dashboard = () => {
   // Fetch all posts
   const fetchPosts = async () => {
     try {
-      const res = await fetch("import.meta.env.VITE_API_URL/api/posts", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -79,7 +79,7 @@ const Dashboard = () => {
     if (postFile) formData.append("file", postFile);
 
     try {
-      const res = await fetch("import.meta.env.VITE_API_URL/api/posts", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -98,7 +98,7 @@ const Dashboard = () => {
   const handleLike = async (postId, liked) => {
     try {
       const res = await fetch(
-        `import.meta.env.VITE_API_URL/api/posts/${
+        `${import.meta.env.VITE_API_URL}/posts/${
           liked ? "unlike" : "like"
         }/${postId}`,
         {
@@ -125,7 +125,7 @@ const Dashboard = () => {
 
     try {
       const res = await fetch(
-        `import.meta.env.VITE_API_URL/api/posts/comment/${activePost._id}`,
+        `${import.meta.env.VITE_API_URL}/posts/comment/${activePost._id}`,
         {
           method: "POST",
           headers: {
@@ -151,7 +151,9 @@ const Dashboard = () => {
     if (!activePost) return;
     try {
       const res = await fetch(
-        `import.meta.env.VITE_API_URL/api/posts/comment/${activePost._id}/${commentId}`,
+        `${import.meta.env.VITE_API_URL}/posts/comment/${
+          activePost._id
+        }/${commentId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -179,7 +181,7 @@ const Dashboard = () => {
     if (profilePicFile) formData.append("profilePic", profilePicFile);
 
     try {
-      const res = await fetch("import.meta.env.VITE_API_URL/api/auth/profile", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/profile`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -202,7 +204,7 @@ const Dashboard = () => {
 
     try {
       const res = await fetch(
-        `import.meta.env.VITE_API_URL/api/posts/${postId}`,
+        `${import.meta.env.VITE_API_URL}/posts/${postId}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -214,7 +216,7 @@ const Dashboard = () => {
         setEditingPostId(null);
         setEditingText("");
         setEditingFile(null);
-        fetchPosts(); // refresh posts
+        fetchPosts();
       } else {
         const data = await res.json();
         alert(data.msg || "Failed to update post");
@@ -230,7 +232,7 @@ const Dashboard = () => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
       const res = await fetch(
-        `import.meta.env.VITE_API_URL/api/posts/${postId}`,
+        `${import.meta.env.VITE_API_URL}/posts/${postId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -264,7 +266,6 @@ const Dashboard = () => {
         user={user}
         openProfileModal={() => setShowProfileModal(true)}
       />
-      {/* MAIN FEED */}
       <main className="dashboard-feed">
         <header className="dashboard-topbar">
           <div className="dashboard-app-title">Alumni Connect</div>
@@ -304,12 +305,13 @@ const Dashboard = () => {
 
               return (
                 <div key={post._id} className="dashboard-post">
-                  {/* Post Header */}
                   <div className="dashboard-post-header">
                     <img
                       src={
                         post.user?.profilePic
-                          ? `import.meta.env.VITE_API_URL/${post.user.profilePic}`
+                          ? `${import.meta.env.VITE_API_URL}/${
+                              post.user.profilePic
+                            }`
                           : "https://via.placeholder.com/40"
                       }
                       alt="Profile"
@@ -350,7 +352,6 @@ const Dashboard = () => {
                     )}
                   </div>
 
-                  {/* Post Body */}
                   {isEditing ? (
                     <div className="dashboard-edit-post">
                       <textarea
@@ -404,7 +405,9 @@ const Dashboard = () => {
                       {post.file &&
                         (post.file.endsWith(".pdf") ? (
                           <a
-                            href={`import.meta.env.VITE_API_URL/${post.file}`}
+                            href={`${import.meta.env.VITE_API_URL}/${
+                              post.file
+                            }`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="dashboard-post-file"
@@ -413,7 +416,7 @@ const Dashboard = () => {
                           </a>
                         ) : (
                           <img
-                            src={`import.meta.env.VITE_API_URL/${post.file}`}
+                            src={`${import.meta.env.VITE_API_URL}/${post.file}`}
                             alt="Post"
                             className="dashboard-post-image"
                           />
@@ -421,7 +424,6 @@ const Dashboard = () => {
                     </>
                   )}
 
-                  {/* Post Footer */}
                   <div className="dashboard-post-footer">
                     <span
                       onClick={() =>
@@ -456,7 +458,6 @@ const Dashboard = () => {
         </div>
       </main>
 
-      {/* RIGHT SIDEBAR */}
       <aside className="dashboard-chat">
         <div className="dashboard-chat-header">Chats</div>
         <div className="dashboard-chat-scroll">
@@ -477,7 +478,6 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Profile Modal */}
       {showProfileModal && (
         <div className="dashboard-modal-overlay">
           <div className="dashboard-modal">
@@ -518,7 +518,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Comments Modal */}
       {showCommentsModal && activePost && (
         <div className="dashboard-modal-overlay">
           <div className="dashboard-modal">

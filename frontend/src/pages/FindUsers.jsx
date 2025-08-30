@@ -5,6 +5,8 @@ import { FaPaperPlane, FaUserPlus } from "react-icons/fa";
 import io from "socket.io-client";
 import "../styles/FindUsers.css";
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 // Connect to socket
 const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
 
@@ -45,12 +47,9 @@ const FindUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(
-          "import.meta.env.VITE_API_URL/api/findusers",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get(`${API}/findusers`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setUsers(res.data.users || []);
         setSuggested((res.data.users || []).slice(0, 4));
@@ -125,7 +124,7 @@ const FindUsers = () => {
     if (!currentUser) return;
     try {
       await axios.post(
-        `import.meta.env.VITE_API_URL/api/connections/send/${targetUserId}`,
+        `${API}/connections/send/${targetUserId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -152,7 +151,7 @@ const FindUsers = () => {
   const handleAccept = async (userId) => {
     try {
       await axios.post(
-        `import.meta.env.VITE_API_URL/api/connections/accept/${userId}`,
+        `${API}/connections/accept/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -172,7 +171,7 @@ const FindUsers = () => {
   const handleReject = async (userId) => {
     try {
       await axios.post(
-        `import.meta.env.VITE_API_URL/api/connections/reject/${userId}`,
+        `${API}/connections/reject/${userId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -201,10 +200,9 @@ const FindUsers = () => {
   // Open user profile & posts
   const handleOpenUserProfile = async (user) => {
     try {
-      const res = await axios.get(
-        `import.meta.env.VITE_API_URL/api/posts/user/${user._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.get(`${API}/posts/user/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setUserPosts(res.data.posts || []);
       setSelectedUser(user);
     } catch (err) {
@@ -217,6 +215,13 @@ const FindUsers = () => {
     const fullName = `${u.firstname} ${u.lastname}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
   });
+
+  // Helper to get profile pic URL
+  const getProfilePicUrl = (pic) => {
+    if (!pic) return "https://via.placeholder.com/100";
+    if (pic.startsWith("http")) return pic;
+    return `${API}/${pic}`;
+  };
 
   return (
     <div className="findusers-wrapper">
@@ -247,7 +252,7 @@ const FindUsers = () => {
 
         {/* Sent Requests */}
         {showSentRequests && (
-          <div className="requests-popup">
+          <div className="requests-popup sent">
             {users
               .filter((u) =>
                 currentUser?.sentRequests.includes(u._id.toString())
@@ -262,7 +267,7 @@ const FindUsers = () => {
 
         {/* Received Requests */}
         {showReceivedRequests && (
-          <div className="requests-popup">
+          <div className="requests-popup received">
             {users
               .filter((u) =>
                 currentUser?.receivedRequests.includes(u._id.toString())
@@ -292,11 +297,7 @@ const FindUsers = () => {
                 onClick={() => handleOpenUserProfile(u)}
               >
                 <img
-                  src={
-                    u.profilePic
-                      ? `import.meta.env.VITE_API_URL/${u.profilePic}`
-                      : "https://via.placeholder.com/100"
-                  }
+                  src={getProfilePicUrl(u.profilePic)}
                   alt="Profile"
                   className="findusers-avatar"
                 />
@@ -356,11 +357,7 @@ const FindUsers = () => {
         {suggested.map((u) => (
           <div key={u._id} className="findusers-suggested-card">
             <img
-              src={
-                u.profilePic
-                  ? `import.meta.env.VITE_API_URL/${u.profilePic}`
-                  : "https://via.placeholder.com/50"
-              }
+              src={getProfilePicUrl(u.profilePic)}
               alt="Profile"
               className="findusers-suggested-avatar"
             />
@@ -403,17 +400,14 @@ const FindUsers = () => {
                     {post.file &&
                       (post.file.endsWith(".pdf") ? (
                         <a
-                          href={`import.meta.env.VITE_API_URL/${post.file}`}
+                          href={`${API}/${post.file}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
                           📄 View PDF
                         </a>
                       ) : (
-                        <img
-                          src={`import.meta.env.VITE_API_URL/${post.file}`}
-                          alt="Post"
-                        />
+                        <img src={`${API}/${post.file}`} alt="Post" />
                       ))}
                   </div>
                 ))

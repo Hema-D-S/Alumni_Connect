@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../styles/Auth.css";
 import { FaGoogle, FaLinkedin } from "react-icons/fa";
-import { signup, signin } from "../services/api";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -15,11 +14,14 @@ const Auth = () => {
     phone: "",
     email: "",
     password: "",
-    role: "student", // default
+    role: "student",
     batch: "",
   });
 
   const navigate = useNavigate();
+
+  // Base API URL
+  const API = import.meta.env.VITE_API_URL;
 
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({
@@ -35,7 +37,7 @@ const Auth = () => {
           }
         );
 
-        const res = await axios.post("http://localhost:5000/api/auth/google", {
+        const res = await axios.post(`${API}/auth/google`, {
           email: userInfo.data.email,
           name: userInfo.data.name,
           googleId: userInfo.data.sub,
@@ -43,6 +45,7 @@ const Auth = () => {
 
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("userId", res.data.user._id);
+
         alert("Google Signup/Login successful");
         navigate("/dashboard");
       } catch (err) {
@@ -71,24 +74,33 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      let res;
+
       if (isSignUp) {
-        const data = await signup(formData);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.user._id);
-        navigate("/dashboard");
+        // Signup request
+        res = await axios.post(`${API}/auth/register`, formData);
       } else {
-        const data = await signin({
+        // Signin request
+        res = await axios.post(`${API}/auth/login`, {
           email: formData.email,
           password: formData.password,
         });
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", data.user._id);
-        navigate("/dashboard");
       }
+
+      // Store token + user
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.user._id);
+
+      navigate("/dashboard");
     } catch (err) {
-      alert(err.response?.data?.msg || "Error occurred");
-      console.error(err.response?.data);
+      console.error("Auth error:", err.response?.data || err.message);
+      alert(
+        err.response?.data?.msg ||
+          err.response?.data?.error ||
+          "Error occurred while authenticating"
+      );
     }
   };
 

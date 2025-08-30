@@ -4,13 +4,16 @@ import { Link } from "react-router-dom";
 import "../styles/Dashboard.css";
 
 const LeftSidebar = ({ user, openProfileModal }) => {
+  // Use backend API URL from environment variables
+  const API = import.meta.env.VITE_API_URL;
+
   return (
     <aside className="dashboard-sidebar">
       <div className="dashboard-profile">
         <img
           src={
             user?.profilePic
-              ? `http://localhost:5000/${user.profilePic}`
+              ? `${API}/${user.profilePic}` // ✅ Fix here
               : "https://via.placeholder.com/80"
           }
           alt="Profile"
