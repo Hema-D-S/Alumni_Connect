@@ -37,10 +37,22 @@ const Auth = () => {
           }
         );
 
+        // Prompt for batch year since it's required
+        const batchYear = prompt(
+          "Please enter your graduating batch year (e.g., 2023):"
+        );
+
+        if (!batchYear || isNaN(batchYear)) {
+          alert("Graduating batch year is required and must be a valid number");
+          return;
+        }
+
         const res = await axios.post(`${API}/auth/google`, {
           email: userInfo.data.email,
           name: userInfo.data.name,
           googleId: userInfo.data.sub,
+          profilePic: userInfo.data.picture,
+          batch: parseInt(batchYear),
         });
 
         localStorage.setItem("token", res.data.token);

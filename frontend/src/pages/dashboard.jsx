@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [phoneInput, setPhoneInput] = useState("");
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showComments, setShowComments] = useState({});
 
   const token = localStorage.getItem("token");
   const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
@@ -53,26 +54,20 @@ const Dashboard = () => {
     if (token) fetchUser();
   }, [token]);
 
-  // Fetch users for chat (connections)
+  // Fetch connected users for chat
   useEffect(() => {
     const fetchChatUsers = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/findusers/all`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/connections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (res.ok) {
-          // Filter out current user and limit to 5-6 users for chat sidebar
-          const filteredUsers = data
-            .filter((u) => u._id !== user?._id)
-            .slice(0, 6);
-          setChatUsers(filteredUsers);
+          // Use only connected users for chat sidebar
+          setChatUsers(data.connections || []);
         }
       } catch (err) {
-        console.error("Error fetching chat users:", err);
+        console.error("Error fetching connected users:", err);
       }
     };
     if (token && user) fetchChatUsers();
@@ -117,6 +112,82 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Error creating post:", err);
     }
+  };
+
+  // Like a post
+  const handleLike = async (postId) => {
+    try {
+      const currentPost = posts.find((post) => post._id === postId);
+      const isLiked = currentPost.likes.includes(user._id);
+
+      const endpoint = isLiked ? "unlike" : "like";
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/posts/${endpoint}/${postId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        // Update the post with new like count and liked status
+        setPosts(
+          posts.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: isLiked
+                    ? post.likes.filter((id) => id !== user._id)
+                    : [...post.likes, user._id],
+                }
+              : post
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error liking/unliking post:", err);
+    }
+  };
+
+  // Add comment to a post
+  const handleAddComment = async (postId, commentText) => {
+    if (!commentText.trim()) return;
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text: commentText }),
+        }
+      );
+      const data = await res.json();
+      if (res.ok) {
+        // Update the post with new comments array
+        setPosts(
+          posts.map((post) =>
+            post._id === postId ? { ...post, comments: data.comments } : post
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    }
+  };
+
+  // Toggle comments visibility
+  const toggleComments = (postId) => {
+    setShowComments((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
   };
 
   // Update Profile
@@ -217,10 +288,65 @@ const Dashboard = () => {
                   />
                 ))}
               <div className="dashboard-post-footer">
-                <span>👍 {post.likes?.length || 0} Likes</span>
-                <span>💬 {post.comments?.length || 0} Comments</span>
-                <span>↪️ Share</span>
+                <button
+                  className={`dashboard-footer-btn ${
+                    post.likes?.includes(user?._id) ? "liked" : ""
+                  }`}
+                  onClick={() => handleLike(post._id)}
+                >
+                  👍 {post.likes?.length || 0} Likes
+                </button>
+                <button
+                  className="dashboard-footer-btn"
+                  onClick={() => toggleComments(post._id)}
+                >
+                  💬 {post.comments?.length || 0} Comments
+                </button>
+                <button
+                  className="dashboard-footer-btn"
+                  onClick={() => {
+                    const comment = prompt("Add a comment:");
+                    if (comment) handleAddComment(post._id, comment);
+                  }}
+                >
+                  ➕ Add Comment
+                </button>
+                <button className="dashboard-footer-btn">↪️ Share</button>
               </div>
+
+              {/* Comments Section */}
+              {showComments[post._id] && (
+                <div className="dashboard-comments-section">
+                  {post.comments && post.comments.length > 0 ? (
+                    post.comments.map((comment, index) => (
+                      <div key={index} className="dashboard-comment">
+                        <img
+                          src={getProfilePicUrl(comment.user?.profilePic)}
+                          alt="Profile"
+                          className="dashboard-comment-avatar"
+                        />
+                        <div className="dashboard-comment-content">
+                          <div className="dashboard-comment-header">
+                            <span className="dashboard-comment-author">
+                              {comment.user?.firstname} {comment.user?.lastname}
+                            </span>
+                            <span className="dashboard-comment-time">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="dashboard-comment-text">
+                            {comment.text}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="dashboard-no-comments">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -232,7 +358,8 @@ const Dashboard = () => {
         <div className="dashboard-chat-scroll">
           {chatUsers.length === 0 ? (
             <div className="dashboard-no-chats">
-              <p>No users to chat with</p>
+              <p>No connections yet</p>
+              <small>Connect with alumni to start chatting</small>
             </div>
           ) : (
             chatUsers.map((chatUser) => (

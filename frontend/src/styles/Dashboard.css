@@ -177,6 +177,31 @@
   justify-content: space-between;
   font-size: 14px;
   color: gray;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+}
+
+.dashboard-footer-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.dashboard-footer-btn:hover {
+  background: #f0f0f0;
+  color: #a30027;
+}
+
+.dashboard-footer-btn.liked {
+  color: #a30027;
+  background: #ffe6e6;
 }
 
 /* Chat Sidebar */
@@ -534,6 +559,106 @@
     width: 100%;
   }
 }
+
+/* Post Footer Buttons */
+.dashboard-post-footer {
+  display: flex;
+  gap: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  margin-top: 10px;
+}
+
+.dashboard-footer-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dashboard-footer-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.dashboard-footer-btn.liked {
+  color: #007bff;
+  background: #e3f2fd;
+}
+
+.dashboard-footer-btn.liked:hover {
+  background: #bbdefb;
+}
+
+/* Comments Section */
+.dashboard-comments-section {
+  padding: 15px;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  margin-top: 10px;
+}
+
+.dashboard-comment {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dashboard-comment-content {
+  flex: 1;
+}
+
+.dashboard-comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.dashboard-comment-author {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.dashboard-comment-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.dashboard-comment-text {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.dashboard-no-comments {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin: 20px 0;
+}
+
 @media (max-width: 480px) {
   .dashboard-topbar {
     flex-direction: column;
