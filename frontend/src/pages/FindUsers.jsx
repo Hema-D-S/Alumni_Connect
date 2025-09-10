@@ -28,6 +28,12 @@ const FindUsers = () => {
     const handleClickOutside = (e) => {
       const sentPopup = document.querySelector(".requests-popup.sent");
       const receivedPopup = document.querySelector(".requests-popup.received");
+      const requestIcons = document.querySelector(".request-icons");
+
+      // Don't close if clicking on the icons themselves
+      if (requestIcons && requestIcons.contains(e.target)) {
+        return;
+      }
 
       if (
         (showSentRequests && sentPopup && !sentPopup.contains(e.target)) ||
@@ -239,47 +245,149 @@ const FindUsers = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <div className="request-icons">
-              <FaPaperPlane
-                title="Sent Requests"
-                onClick={() => setShowSentRequests(!showSentRequests)}
-              />
-              <FaUserPlus
-                title="Received Requests"
-                onClick={() => setShowReceivedRequests(!showReceivedRequests)}
-              />
+              <div className="request-icon-container">
+                <FaPaperPlane
+                  title="Sent Requests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSentRequests(!showSentRequests);
+                    setShowReceivedRequests(false);
+                  }}
+                />
+                {currentUser?.sentRequests?.length > 0 && (
+                  <span className="request-badge">
+                    {currentUser.sentRequests.length}
+                  </span>
+                )}
+              </div>
+              <div className="request-icon-container">
+                <FaUserPlus
+                  title="Received Requests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowReceivedRequests(!showReceivedRequests);
+                    setShowSentRequests(false);
+                  }}
+                />
+                {currentUser?.receivedRequests?.length > 0 && (
+                  <span className="request-badge">
+                    {currentUser.receivedRequests.length}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
         {/* Sent Requests */}
         {showSentRequests && (
-          <div className="requests-popup sent">
-            {users
-              .filter((u) =>
+          <div
+            className="requests-popup sent"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="requests-popup-header">
+              <h3>Sent Requests</h3>
+              <button
+                className="close-popup"
+                onClick={() => setShowSentRequests(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="requests-list">
+              {users
+                .filter((u) =>
+                  currentUser?.sentRequests.includes(u._id.toString())
+                )
+                .map((u) => (
+                  <div key={u._id} className="request-item sent-item">
+                    <img
+                      src={
+                        u.profilePic?.startsWith("http")
+                          ? u.profilePic
+                          : `${BASE_URL}/${u.profilePic}`
+                      }
+                      alt="Profile"
+                      className="request-profile-pic"
+                    />
+                    <div className="request-info">
+                      <div className="request-name">
+                        {u.firstname} {u.lastname}
+                      </div>
+                      <div className="request-status">Pending</div>
+                    </div>
+                  </div>
+                ))}
+              {users.filter((u) =>
                 currentUser?.sentRequests.includes(u._id.toString())
-              )
-              .map((u) => (
-                <div key={u._id} className="request-item">
-                  {u.firstname} {u.lastname} (Pending)
-                </div>
-              ))}
+              ).length === 0 && (
+                <div className="no-requests">No sent requests</div>
+              )}
+            </div>
           </div>
         )}
 
         {/* Received Requests */}
         {showReceivedRequests && (
-          <div className="requests-popup received">
-            {users
-              .filter((u) =>
+          <div
+            className="requests-popup received"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="requests-popup-header">
+              <h3>Received Requests</h3>
+              <button
+                className="close-popup"
+                onClick={() => setShowReceivedRequests(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="requests-list">
+              {users
+                .filter((u) =>
+                  currentUser?.receivedRequests.includes(u._id.toString())
+                )
+                .map((u) => (
+                  <div key={u._id} className="request-item received-item">
+                    <img
+                      src={
+                        u.profilePic?.startsWith("http")
+                          ? u.profilePic
+                          : `${BASE_URL}/${u.profilePic}`
+                      }
+                      alt="Profile"
+                      className="request-profile-pic"
+                    />
+                    <div className="request-info">
+                      <div className="request-name">
+                        {u.firstname} {u.lastname}
+                      </div>
+                      <div className="request-batch">
+                        Batch {u.batch} • {u.role}
+                      </div>
+                    </div>
+                    <div className="request-actions">
+                      <button
+                        className="accept-btn"
+                        onClick={() => handleAccept(u._id)}
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="reject-btn"
+                        onClick={() => handleReject(u._id)}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              {users.filter((u) =>
                 currentUser?.receivedRequests.includes(u._id.toString())
-              )
-              .map((u) => (
-                <div key={u._id} className="request-item">
-                  {u.firstname} {u.lastname}
-                  <button onClick={() => handleAccept(u._id)}>Accept</button>
-                  <button onClick={() => handleReject(u._id)}>Reject</button>
-                </div>
-              ))}
+              ).length === 0 && (
+                <div className="no-requests">No pending requests</div>
+              )}
+            </div>
           </div>
         )}
 

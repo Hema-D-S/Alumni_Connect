@@ -198,6 +198,41 @@ const deleteComment = async (req, res) => {
   }
 };
 
+// ---------------- UPDATE COMMENT ----------------
+const updateComment = async (req, res) => {
+  const { postId, commentId } = req.params;
+  const { text } = req.body;
+
+  if (!text) return res.status(400).json({ error: "Comment text is required" });
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const comment = post.comments.find((c) => c._id.toString() === commentId);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    // Only allow the comment owner to edit
+    if (comment.user.toString() !== req.user.id) {
+      return res.status(401).json({ error: "Not authorized to edit comment" });
+    }
+
+    // Update comment text
+    comment.text = text;
+    comment.updatedAt = new Date();
+    await post.save();
+
+    await post.populate(
+      "comments.user",
+      "firstname lastname username profilePic"
+    );
+
+    res.status(200).json({ msg: "Comment updated", comments: post.comments });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // ---------------- EXPORT ALL ----------------
 module.exports = {
   createPost,
@@ -208,5 +243,6 @@ module.exports = {
   likePost,
   unlikePost,
   addComment,
+  updateComment,
   deleteComment,
 };

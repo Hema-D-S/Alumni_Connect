@@ -11,6 +11,7 @@ const {
   likePost,
   unlikePost,
   addComment,
+  updateComment,
   deleteComment,
 } = require("../controllers/postController");
 
@@ -35,6 +36,9 @@ router.put("/unlike/:id", authMiddleware, unlikePost);
 
 // Add comment
 router.post("/comment/:id", authMiddleware, addComment);
+
+// Update comment
+router.put("/comment/:postId/:commentId", authMiddleware, updateComment);
 
 // Delete comment
 router.delete("/comment/:postId/:commentId", authMiddleware, deleteComment);

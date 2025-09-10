@@ -39,7 +39,7 @@ exports.getProgramsByCategory = async (req, res) => {
 exports.createProgram = async (req, res) => {
   try {
     // Check if user is alumni
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (user.role !== "alumni") {
       return res.status(403).json({
         msg: "Access denied. Only alumni can create mentorship programs.",
@@ -79,7 +79,7 @@ exports.createProgram = async (req, res) => {
     const program = new MentorshipProgram({
       title,
       description,
-      mentor: req.user.id,
+      mentor: req.user._id,
       category,
       duration,
       maxParticipants,
@@ -111,35 +111,69 @@ exports.createProgram = async (req, res) => {
 exports.applyToProgram = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    const program = await MentorshipProgram.findById(id);
+    // First, check if the program exists and get basic info using lean() to avoid validation
+    const program = await MentorshipProgram.findById(id).lean();
     if (!program) {
       return res.status(404).json({ msg: "Program not found" });
     }
 
+    // Check if program is active
+    if (!program.isActive) {
+      return res.status(400).json({ msg: "Program is not active" });
+    }
+
     // Check if user is already a participant
-    if (program.participants.includes(userId)) {
+    if (program.participants && program.participants.includes(userId)) {
       return res.status(400).json({ msg: "Already applied to this program" });
     }
 
     // Check if program is full
-    if (program.participants.length >= program.maxParticipants) {
+    const currentParticipants = program.participants
+      ? program.participants.length
+      : 0;
+    if (currentParticipants >= (program.maxParticipants || 10)) {
       return res.status(400).json({ msg: "Program is full" });
     }
 
     // Check if application deadline has passed
     if (
       program.applicationDeadline &&
-      new Date() > program.applicationDeadline
+      new Date() > new Date(program.applicationDeadline)
     ) {
       return res.status(400).json({ msg: "Application deadline has passed" });
     }
 
-    program.participants.push(userId);
-    await program.save();
+    // Use updateOne to avoid any validation issues
+    const result = await MentorshipProgram.updateOne(
+      { _id: id },
+      { $push: { participants: userId } }
+    );
 
-    res.json({ msg: "Successfully applied to program" });
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({ msg: "Failed to apply to program" });
+    }
+
+    // Prepare response with meeting details based on mode
+    let responseData = {
+      msg: "Successfully applied to program",
+      programTitle: program.title,
+      mode: program.mode,
+      meetingSchedule: program.meetingSchedule,
+    };
+
+    // Add mode-specific information
+    if (program.mode === "online") {
+      responseData.meetingLink = program.meetingLink;
+      responseData.platform = program.platform;
+      responseData.instructions = `Join the online sessions via ${program.platform}. Meeting link: ${program.meetingLink}`;
+    } else if (program.mode === "offline") {
+      responseData.location = program.location;
+      responseData.instructions = `Attend sessions at: ${program.location}`;
+    }
+
+    res.json(responseData);
   } catch (err) {
     console.error("Error applying to program:", err);
     res.status(500).json({ msg: "Server error" });
@@ -149,7 +183,7 @@ exports.applyToProgram = async (req, res) => {
 // Get programs where user is mentor
 exports.getMyMentorPrograms = async (req, res) => {
   try {
-    const programs = await MentorshipProgram.find({ mentor: req.user.id })
+    const programs = await MentorshipProgram.find({ mentor: req.user._id })
       .populate("participants", "firstname lastname profilePic batch role")
       .sort({ createdAt: -1 });
 
@@ -164,7 +198,7 @@ exports.getMyMentorPrograms = async (req, res) => {
 exports.getMyParticipantPrograms = async (req, res) => {
   try {
     const programs = await MentorshipProgram.find({
-      participants: req.user.id,
+      participants: req.user._id,
     })
       .populate("mentor", "firstname lastname profilePic batch role")
       .sort({ createdAt: -1 });
@@ -186,7 +220,7 @@ exports.updateProgram = async (req, res) => {
       return res.status(404).json({ msg: "Program not found" });
     }
 
-    if (program.mentor.toString() !== req.user.id) {
+    if (program.mentor.toString() !== req.user._id.toString()) {
       return res.status(403).json({ msg: "Not authorized" });
     }
 
@@ -213,7 +247,7 @@ exports.deleteProgram = async (req, res) => {
       return res.status(404).json({ msg: "Program not found" });
     }
 
-    if (program.mentor.toString() !== req.user.id) {
+    if (program.mentor.toString() !== req.user._id.toString()) {
       return res.status(403).json({ msg: "Not authorized" });
     }
 

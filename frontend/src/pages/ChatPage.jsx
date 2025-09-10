@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import LeftSidebar from "../components/LeftSidebar";
 import { io } from "socket.io-client";
+import { useSearchParams } from "react-router-dom";
 import "../styles/ChatPage.css";
 
 /* ------------------- Decode JWT ------------------- */
@@ -41,6 +42,10 @@ const ChatPage = () => {
   const [selfId, setSelfId] = useState(
     () => localStorage.getItem("userId") || null
   );
+
+  /* ------------------- URL Parameters ------------------- */
+  const [searchParams] = useSearchParams();
+  const userIdFromUrl = searchParams.get("userId");
 
   /* ------------------- Refs ------------------- */
   const messagesEndRef = useRef(null);
@@ -161,21 +166,37 @@ const ChatPage = () => {
   }, [API]);
 
   /* ------------------- Fetch Messages ------------------- */
-  const fetchMessages = async (user) => {
-    if (!user || !user._id) return;
-    try {
-      setLoadingMessages(true);
-      const res = await axios.get(`${API}/chat/${user._id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setMessages(res.data || []);
-    } catch (err) {
-      console.error("Error fetching messages:", err);
-      setMessages([]);
-    } finally {
-      setLoadingMessages(false);
+  const fetchMessages = useCallback(
+    async (user) => {
+      if (!user || !user._id) return;
+      try {
+        setLoadingMessages(true);
+        const res = await axios.get(`${API}/chat/${user._id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setMessages(res.data || []);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+        setMessages([]);
+      } finally {
+        setLoadingMessages(false);
+      }
+    },
+    [API]
+  );
+
+  /* ------------------- Auto-select user from URL ------------------- */
+  useEffect(() => {
+    if (userIdFromUrl && connectedUsers.length > 0 && !selectedUser) {
+      const targetUser = connectedUsers.find(
+        (user) => user._id === userIdFromUrl
+      );
+      if (targetUser) {
+        setSelectedUser(targetUser);
+        fetchMessages(targetUser);
+      }
     }
-  };
+  }, [userIdFromUrl, connectedUsers, selectedUser, fetchMessages]);
 
   /* ------------------- Scroll to Bottom ------------------- */
   useEffect(() => {

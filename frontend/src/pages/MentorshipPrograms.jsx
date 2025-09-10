@@ -7,6 +7,8 @@ const MentorshipPrograms = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModalData, setSuccessModalData] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -142,7 +144,10 @@ const MentorshipPrograms = () => {
 
       const data = await res.json();
       if (res.ok) {
-        alert("Successfully applied to program!");
+        // Store success data for modal
+        setSuccessModalData(data);
+        setShowSuccessModal(true);
+
         // Refresh programs
         const updatedPrograms = programs.map((p) =>
           p._id === programId
@@ -550,6 +555,83 @@ const MentorshipPrograms = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && successModalData && (
+        <div className="mentorship-modal-overlay">
+          <div className="mentorship-modal success-modal">
+            <div className="success-modal-header">
+              <h2>🎉 Application Successful!</h2>
+              <button
+                className="mentorship-modal-close"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="success-modal-content">
+              <p className="success-message">
+                You have successfully applied to "
+                {successModalData.programTitle}"!
+              </p>
+
+              {successModalData.mode === "online" && (
+                <div className="meeting-details online-details">
+                  <h3>📱 Online Session Details</h3>
+                  <div className="detail-item">
+                    <strong>Platform:</strong> {successModalData.platform}
+                  </div>
+                  <div className="detail-item">
+                    <strong>Meeting Link:</strong>
+                    <a
+                      href={successModalData.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {successModalData.meetingLink}
+                    </a>
+                  </div>
+                  {successModalData.meetingSchedule && (
+                    <div className="detail-item">
+                      <strong>Schedule:</strong>{" "}
+                      {successModalData.meetingSchedule}
+                    </div>
+                  )}
+                  <div className="info-note">
+                    💡 Save this information for your sessions!
+                  </div>
+                </div>
+              )}
+
+              {successModalData.mode === "offline" && (
+                <div className="meeting-details offline-details">
+                  <h3>📍 Offline Session Details</h3>
+                  <div className="detail-item">
+                    <strong>Location:</strong> {successModalData.location}
+                  </div>
+                  {successModalData.meetingSchedule && (
+                    <div className="detail-item">
+                      <strong>Schedule:</strong>{" "}
+                      {successModalData.meetingSchedule}
+                    </div>
+                  )}
+                  <div className="info-note">
+                    📌 Make sure to note the location for your sessions!
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="success-modal-actions">
+              <button
+                className="btn-primary"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                Got it!
+              </button>
+            </div>
           </div>
         </div>
       )}

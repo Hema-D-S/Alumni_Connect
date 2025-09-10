@@ -17,7 +17,12 @@ const Dashboard = () => {
   const [phoneInput, setPhoneInput] = useState("");
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showComments, setShowComments] = useState({});
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [selectedPostComments, setSelectedPostComments] = useState([]);
+  const [editingComment, setEditingComment] = useState(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [newCommentText, setNewCommentText] = useState("");
 
   const token = localStorage.getItem("token");
   const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
@@ -152,42 +157,130 @@ const Dashboard = () => {
     }
   };
 
-  // Add comment to a post
-  const handleAddComment = async (postId, commentText) => {
-    if (!commentText.trim()) return;
+  // Add comment to a post (for modal)
+  const handleAddComment = async () => {
+    if (!newCommentText.trim() || !selectedPostId) return;
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}`,
+        `${import.meta.env.VITE_API_URL}/posts/comment/${selectedPostId}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ text: commentText }),
+          body: JSON.stringify({ text: newCommentText }),
         }
       );
       const data = await res.json();
       if (res.ok) {
-        // Update the post with new comments array
+        // Update both the posts state and selected post comments
         setPosts(
           posts.map((post) =>
-            post._id === postId ? { ...post, comments: data.comments } : post
+            post._id === selectedPostId
+              ? { ...post, comments: data.comments }
+              : post
           )
         );
+        setSelectedPostComments(data.comments);
+        setNewCommentText("");
       }
     } catch (err) {
       console.error("Error adding comment:", err);
     }
   };
 
-  // Toggle comments visibility
-  const toggleComments = (postId) => {
-    setShowComments((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
+  // Open comment modal
+  const openCommentModal = (post) => {
+    setSelectedPostId(post._id);
+    setSelectedPostComments(post.comments || []);
+    setShowCommentModal(true);
+    setNewCommentText("");
+  };
+
+  // Close comment modal
+  const closeCommentModal = () => {
+    setShowCommentModal(false);
+    setSelectedPostId(null);
+    setSelectedPostComments([]);
+    setEditingComment(null);
+    setEditCommentText("");
+    setNewCommentText("");
+  };
+
+  // Delete comment
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}/${commentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.ok) {
+        // Remove the comment from the post
+        const updatedPosts = posts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                comments: post.comments.filter((c) => c._id !== commentId),
+              }
+            : post
+        );
+        setPosts(updatedPosts);
+
+        // Update modal comments if modal is open for this post
+        if (selectedPostId === postId) {
+          setSelectedPostComments((prev) =>
+            prev.filter((c) => c._id !== commentId)
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Error deleting comment:", err);
+    }
+  };
+
+  // Update comment
+  const handleUpdateComment = async (postId, commentId, newText) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}/${commentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text: newText }),
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        // Update the post with updated comments
+        setPosts(
+          posts.map((post) =>
+            post._id === postId ? { ...post, comments: data.comments } : post
+          )
+        );
+
+        // Update modal comments if modal is open for this post
+        if (selectedPostId === postId) {
+          setSelectedPostComments(data.comments);
+        }
+
+        setEditingComment(null);
+        setEditCommentText("");
+      }
+    } catch (err) {
+      console.error("Error updating comment:", err);
+    }
   };
 
   // Update Profile
@@ -297,56 +390,12 @@ const Dashboard = () => {
                   👍 {post.likes?.length || 0} Likes
                 </button>
                 <button
-                  className="dashboard-footer-btn"
-                  onClick={() => toggleComments(post._id)}
+                  className="dashboard-footer-btn comment-btn"
+                  onClick={() => openCommentModal(post)}
                 >
                   💬 {post.comments?.length || 0} Comments
                 </button>
-                <button
-                  className="dashboard-footer-btn"
-                  onClick={() => {
-                    const comment = prompt("Add a comment:");
-                    if (comment) handleAddComment(post._id, comment);
-                  }}
-                >
-                  ➕ Add Comment
-                </button>
-                <button className="dashboard-footer-btn">↪️ Share</button>
               </div>
-
-              {/* Comments Section */}
-              {showComments[post._id] && (
-                <div className="dashboard-comments-section">
-                  {post.comments && post.comments.length > 0 ? (
-                    post.comments.map((comment, index) => (
-                      <div key={index} className="dashboard-comment">
-                        <img
-                          src={getProfilePicUrl(comment.user?.profilePic)}
-                          alt="Profile"
-                          className="dashboard-comment-avatar"
-                        />
-                        <div className="dashboard-comment-content">
-                          <div className="dashboard-comment-header">
-                            <span className="dashboard-comment-author">
-                              {comment.user?.firstname} {comment.user?.lastname}
-                            </span>
-                            <span className="dashboard-comment-time">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="dashboard-comment-text">
-                            {comment.text}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="dashboard-no-comments">
-                      No comments yet. Be the first to comment!
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -427,6 +476,147 @@ const Dashboard = () => {
             <div className="dashboard-modal-actions">
               <button onClick={handleUpdateProfile}>Save</button>
               <button onClick={() => setShowProfileModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Comment Modal */}
+      {showCommentModal && (
+        <div className="dashboard-modal-overlay">
+          <div className="dashboard-comment-modal">
+            <div className="dashboard-comment-modal-header">
+              <h3>Comments</h3>
+              <button
+                onClick={closeCommentModal}
+                className="dashboard-modal-close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="dashboard-comment-modal-body">
+              {/* Add Comment Input */}
+              <div className="dashboard-add-comment">
+                <img
+                  src={getProfilePicUrl(user?.profilePic)}
+                  alt="Your Profile"
+                  className="dashboard-comment-avatar"
+                />
+                <div className="dashboard-comment-input-container">
+                  <input
+                    type="text"
+                    placeholder="Write a comment..."
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handleAddComment();
+                      }
+                    }}
+                    className="dashboard-comment-input"
+                  />
+                  <button
+                    onClick={handleAddComment}
+                    className="dashboard-comment-submit"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing Comments */}
+              <div className="dashboard-comments-list">
+                {selectedPostComments && selectedPostComments.length > 0 ? (
+                  selectedPostComments.map((comment) => (
+                    <div key={comment._id} className="dashboard-comment">
+                      <img
+                        src={getProfilePicUrl(comment.user?.profilePic)}
+                        alt="Profile"
+                        className="dashboard-comment-avatar"
+                      />
+                      <div className="dashboard-comment-content">
+                        <div className="dashboard-comment-header">
+                          <span className="dashboard-comment-author">
+                            {comment.user?.firstname} {comment.user?.lastname}
+                          </span>
+                          <span className="dashboard-comment-time">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                          {/* Edit/Delete buttons for user's own comments */}
+                          {comment.user?._id === user?._id && (
+                            <div className="dashboard-comment-actions">
+                              <button
+                                onClick={() => {
+                                  setEditingComment(comment._id);
+                                  setEditCommentText(comment.text);
+                                }}
+                                className="dashboard-comment-edit"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteComment(
+                                    selectedPostId,
+                                    comment._id
+                                  )
+                                }
+                                className="dashboard-comment-delete"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {editingComment === comment._id ? (
+                          <div className="dashboard-edit-comment">
+                            <input
+                              type="text"
+                              value={editCommentText}
+                              onChange={(e) =>
+                                setEditCommentText(e.target.value)
+                              }
+                              className="dashboard-comment-input"
+                            />
+                            <div className="dashboard-edit-actions">
+                              <button
+                                onClick={() =>
+                                  handleUpdateComment(
+                                    selectedPostId,
+                                    comment._id,
+                                    editCommentText
+                                  )
+                                }
+                                className="dashboard-comment-save"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingComment(null);
+                                  setEditCommentText("");
+                                }}
+                                className="dashboard-comment-cancel"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="dashboard-comment-text">
+                            {comment.text}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="dashboard-no-comments">
+                    No comments yet. Be the first to comment!
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
