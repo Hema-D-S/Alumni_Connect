@@ -4,6 +4,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/dashboard.jsx";
 import FindUsers from "./pages/FindUsers.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
+import MentorshipPrograms from "./pages/MentorshipPrograms.jsx";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/find" element={<FindUsers />} />
       <Route path="/chat" element={<ChatPage />} />
+      <Route path="/mentorshipprograms" element={<MentorshipPrograms />} />
     </Routes>
   );
 }

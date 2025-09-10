@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import "../styles/Dashboard.css";
 
 const LeftSidebar = ({ user, openProfileModal }) => {
-  // Use backend API URL from environment variables
-  const API = import.meta.env.VITE_API_URL;
+  // Use backend base URL for static files (not API URL)
+  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
   return (
     <aside className="dashboard-sidebar">
@@ -13,7 +13,7 @@ const LeftSidebar = ({ user, openProfileModal }) => {
         <img
           src={
             user?.profilePic
-              ? `${API}/${user.profilePic}` // ✅ Fix here
+              ? `${BASE_URL}/${user.profilePic}` // ✅ Fixed: use BASE_URL instead of API
               : "https://via.placeholder.com/80"
           }
           alt="Profile"

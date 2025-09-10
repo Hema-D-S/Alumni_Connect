@@ -1,8 +1,14 @@
 const express = require("express");
-const { getMessages } = require("../controllers/chatController");
+const {
+  getMessages,
+  getRecentConversations,
+} = require("../controllers/chatController");
 const { authMiddleware } = require("../middlewares/authmiddleware");
 
 const router = express.Router();
+
+// Get recent conversations (must be before /:userId route)
+router.get("/recent", authMiddleware, getRecentConversations);
 
 // Fetch chat history with a specific user
 router.get("/:userId", authMiddleware, getMessages);

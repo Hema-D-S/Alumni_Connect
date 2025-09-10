@@ -219,6 +219,55 @@
   font-size: 12px;
   color: gray;
 }
+
+/* New Chat User Cards */
+.dashboard-chat-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.dashboard-chat-user-card:hover {
+  background: #f5f5f5;
+  transform: translateX(3px);
+}
+
+.dashboard-chat-user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.dashboard-chat-user-info {
+  flex: 1;
+}
+
+.dashboard-chat-user-name {
+  font-weight: bold;
+  margin: 0 0 2px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.dashboard-chat-user-role {
+  font-size: 12px;
+  color: #a30027;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.dashboard-chat-user-batch {
+  font-size: 11px;
+  color: #666;
+  margin: 2px 0 0 0;
+}
 /* 3-dot vertical post menu */
 .post-menu-container {
   position: absolute;

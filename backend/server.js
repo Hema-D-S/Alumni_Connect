@@ -16,7 +16,11 @@ const server = http.createServer(app);
 // ---------------- Socket.IO Setup ----------------
 const io = new Server(server, {
   cors: {
-    origin: "https://alumni-connect-oe7z.vercel.app",
+    origin: [
+      "https://alumni-connect-oe7z.vercel.app", // Production
+      "http://localhost:5173", // Local development
+      "http://localhost:3000", // Alternative local port
+    ],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -89,7 +93,17 @@ app.set("io", io);
 // ---------------- Middleware ----------------
 app.use(express.json());
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+app.use(
+  cors({
+    origin: [
+      FRONTEND_URL,
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://alumni-connect-oe7z.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ---------------- Routes ----------------
@@ -98,13 +112,14 @@ const postRoutes = require("./routes/postRoutes");
 const findUsersRoutes = require("./routes/FindUsers");
 const connectionRoutes = require("./routes/connectionRoutes")(io);
 const chatRoutes = require("./routes/chatRoutes");
+const mentorshipRoutes = require("./routes/mentorshipRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/findusers", findUsersRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/chat", chatRoutes);
-app.use("/api/messages", require("./routes/chatRoutes"));
+app.use("/api/mentorship", mentorshipRoutes);
 
 // Test route
 app.get("/", (req, res) => res.send("API running..."));

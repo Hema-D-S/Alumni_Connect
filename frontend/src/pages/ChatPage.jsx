@@ -27,7 +27,8 @@ function decodeUserIdFromToken() {
 }
 
 const ChatPage = () => {
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
   /* ------------------- States ------------------- */
   const [connectedUsers, setConnectedUsers] = useState([]);
@@ -36,6 +37,7 @@ const ChatPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null); // Add current user state
   const [selfId, setSelfId] = useState(
     () => localStorage.getItem("userId") || null
   );
@@ -63,7 +65,7 @@ const ChatPage = () => {
 
   /* ------------------- Setup Socket.IO ------------------- */
   useEffect(() => {
-    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API;
+    const SOCKET_URL = import.meta.env.VITE_WS_URL || "http://localhost:5000";
     socketRef.current = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
     });
@@ -130,23 +132,32 @@ const ChatPage = () => {
     }
   }, [selfId]);
 
-  /* ------------------- Fetch Connected Users ------------------- */
+  /* ------------------- Fetch Connected Users & Current User ------------------- */
   useEffect(() => {
-    const fetchConnectedUsers = async () => {
+    const fetchData = async () => {
       try {
         setLoadingUsers(true);
-        const res = await axios.get(`${API}/connections`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        const token = localStorage.getItem("token");
+
+        // Fetch current user profile
+        const userRes = await axios.get(`${API}/auth/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setConnectedUsers(res.data.connections || []);
+        setCurrentUser(userRes.data.user);
+
+        // Fetch connected users
+        const connectionsRes = await axios.get(`${API}/connections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setConnectedUsers(connectionsRes.data.connections || []);
       } catch (err) {
-        console.error("Error fetching connected users:", err);
+        console.error("Error fetching data:", err);
         setConnectedUsers([]);
       } finally {
         setLoadingUsers(false);
       }
     };
-    fetchConnectedUsers();
+    fetchData();
   }, [API]);
 
   /* ------------------- Fetch Messages ------------------- */
@@ -203,7 +214,7 @@ const ChatPage = () => {
   /* ------------------- UI ------------------- */
   return (
     <div className="chatpage-wrapper">
-      <LeftSidebar active="chat" />
+      <LeftSidebar user={currentUser} />
 
       <div className="chatpage-middle">
         {selectedUser ? (
@@ -282,7 +293,7 @@ const ChatPage = () => {
               <img
                 src={
                   user.profilePic
-                    ? `${API}/${user.profilePic}`
+                    ? `${BASE_URL}/${user.profilePic}`
                     : "https://via.placeholder.com/40"
                 }
                 alt={user.firstname}

@@ -14,8 +14,8 @@ const getConnections = async (req, res) => {
 
     if (!currentUser) return res.status(404).json({ msg: "User not found" });
 
-    // Return connected users array
-    res.json(currentUser.connections || []);
+    // Return connected users array with connections wrapper
+    res.json({ connections: currentUser.connections || [] });
   } catch (err) {
     console.error("Error fetching connections:", err);
     res.status(500).json({ msg: "Server error" });

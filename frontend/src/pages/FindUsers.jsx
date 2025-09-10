@@ -5,10 +5,11 @@ import { FaPaperPlane, FaUserPlus } from "react-icons/fa";
 import io from "socket.io-client";
 import "../styles/FindUsers.css";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
 
 // Connect to socket
-const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
+const socket = io(import.meta.env.VITE_WS_URL || "http://localhost:5000");
 
 const FindUsers = () => {
   const [users, setUsers] = useState([]);
@@ -220,7 +221,7 @@ const FindUsers = () => {
   const getProfilePicUrl = (pic) => {
     if (!pic) return "https://via.placeholder.com/100";
     if (pic.startsWith("http")) return pic;
-    return `${API}/${pic}`;
+    return `${BASE_URL}/${pic}`;
   };
 
   return (
