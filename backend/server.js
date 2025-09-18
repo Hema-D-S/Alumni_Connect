@@ -18,6 +18,9 @@ const io = new Server(server, {
   cors: {
     origin: [
       "https://alumni-connect-oe7z.vercel.app", // Production
+      "https://alumni-connect-jd5g.vercel.app", // Your new Vercel URL
+      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
+      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
       "http://localhost:5173", // Local development
       "http://localhost:3000", // Alternative local port
     ],
