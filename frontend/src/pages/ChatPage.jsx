@@ -4,6 +4,7 @@ import LeftSidebar from "../components/LeftSidebar";
 import { io } from "socket.io-client";
 import { useSearchParams } from "react-router-dom";
 import "../styles/ChatPage.css";
+import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
 
 /* ------------------- Decode JWT ------------------- */
 function decodeUserIdFromToken() {
@@ -28,8 +29,8 @@ function decodeUserIdFromToken() {
 }
 
 const ChatPage = () => {
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  const API = getApiUrl();
+  const BASE_URL = getBaseUrl();
 
   /* ------------------- States ------------------- */
   const [connectedUsers, setConnectedUsers] = useState([]);
@@ -70,7 +71,7 @@ const ChatPage = () => {
 
   /* ------------------- Setup Socket.IO ------------------- */
   useEffect(() => {
-    const SOCKET_URL = import.meta.env.VITE_WS_URL || "http://localhost:5000";
+    const SOCKET_URL = getWsUrl();
     socketRef.current = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
     });

@@ -4,6 +4,7 @@ import { FaGoogle, FaLinkedin } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getApiUrl } from "../config/environment";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -20,8 +21,8 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
-  // Base API URL
-  const API = import.meta.env.VITE_API_URL;
+  // Use dynamic API URL
+  const API = getApiUrl();
 
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({

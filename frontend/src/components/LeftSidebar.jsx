@@ -2,10 +2,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "../styles/Dashboard.css";
+import { getBaseUrl } from "../config/environment";
 
 const LeftSidebar = ({ user, openProfileModal }) => {
-  // Use backend base URL for static files (not API URL)
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  // Use dynamic base URL
+  const BASE_URL = getBaseUrl();
 
   return (
     <aside className="dashboard-sidebar">
