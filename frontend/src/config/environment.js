@@ -3,9 +3,11 @@
 
 export const CONFIG = {
   // Auto-detect environment: Vercel sets VERCEL=1, or use manual override
-  ENVIRONMENT: 
-    import.meta.env.VERCEL === '1' || import.meta.env.MODE === 'production' || import.meta.env.VITE_USE_PRODUCTION === "true" 
-      ? "production" 
+  ENVIRONMENT:
+    import.meta.env.VERCEL === "1" ||
+    import.meta.env.MODE === "production" ||
+    import.meta.env.VITE_USE_PRODUCTION === "true"
+      ? "production"
       : "local",
 
   LOCAL: {
