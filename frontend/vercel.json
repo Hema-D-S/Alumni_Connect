@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_USE_PRODUCTION": "true",
+    "VITE_LINKEDIN_CLIENT_ID": "86fqhsbqb2ba3g",
+    "VITE_LINKEDIN_REDIRECT_URI": "https://alumni-connect-jd5g.vercel.app/linkedin"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

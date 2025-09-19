@@ -1,10 +1,12 @@
 // Environment Configuration Helper
-// Change this value to easily switch between local and production
+// Automatically detects environment or uses manual override
 
 export const CONFIG = {
-  // Set to 'local' for development, 'production' for production
-  ENVIRONMENT:
-    import.meta.env.VITE_USE_PRODUCTION === "true" ? "production" : "local",
+  // Auto-detect environment: Vercel sets VERCEL=1, or use manual override
+  ENVIRONMENT: 
+    import.meta.env.VERCEL === '1' || import.meta.env.MODE === 'production' || import.meta.env.VITE_USE_PRODUCTION === "true" 
+      ? "production" 
+      : "local",
 
   LOCAL: {
     API_URL: "http://localhost:5000/api",
@@ -35,3 +37,5 @@ console.log(`🌍 Environment: ${getCurrentEnvironment().toUpperCase()}`);
 console.log(`🔗 API URL: ${getApiUrl()}`);
 console.log(`📡 Base URL: ${getBaseUrl()}`);
 console.log(`🔌 WebSocket URL: ${getWsUrl()}`);
+console.log(`🔧 Vercel Env: ${import.meta.env.VERCEL}`);
+console.log(`🔧 Mode: ${import.meta.env.MODE}`);
