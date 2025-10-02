@@ -3,6 +3,7 @@ import "../styles/Dashboard.css";
 import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import { getApiUrl, getBaseUrl } from "../config/environment";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -25,8 +26,16 @@ const Dashboard = () => {
   const [newCommentText, setNewCommentText] = useState("");
 
   const token = localStorage.getItem("token");
-  const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+  const BASE_URL = getBaseUrl();
+  const API_URL = getApiUrl();
   const navigate = useNavigate();
+
+  // Redirect if no token
+  useEffect(() => {
+    if (!token) {
+      navigate("/auth");
+    }
+  }, [token, navigate]);
 
   // Helper to get profile pic URL
   const getProfilePicUrl = (pic) => {
@@ -44,52 +53,62 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/auth/profile`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch(`${API_URL}/auth/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
-        if (res.ok) setUser(data.user);
+        if (res.ok) {
+          setUser(data.user);
+          console.log("Profile loaded:", data.user);
+        } else {
+          console.error("Profile fetch failed:", data.msg);
+        }
       } catch (err) {
         console.error("Error fetching profile:", err);
       }
     };
     if (token) fetchUser();
-  }, [token]);
+  }, [token, API_URL]);
 
   // Fetch connected users for chat
   useEffect(() => {
     const fetchChatUsers = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/connections`, {
+        const res = await fetch(`${API_URL}/connections`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         if (res.ok) {
           // Use only connected users for chat sidebar
           setChatUsers(data.connections || []);
+          console.log("Connections loaded:", data.connections?.length || 0);
+        } else {
+          console.error("Connections fetch failed:", data.msg);
         }
       } catch (err) {
         console.error("Error fetching connected users:", err);
       }
     };
     if (token && user) fetchChatUsers();
-  }, [token, user]);
+  }, [token, user, API_URL]);
 
   // Fetch all posts
   const fetchPosts = useCallback(async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
+      const res = await fetch(`${API_URL}/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok) setPosts(data.posts || []);
+      if (res.ok) {
+        setPosts(data.posts || []);
+        console.log("Posts loaded:", data.posts?.length || 0);
+      } else {
+        console.error("Posts fetch failed:", data.msg);
+      }
     } catch (err) {
       console.error("Error fetching posts:", err);
     }
-  }, [token]);
+  }, [token, API_URL]);
 
   useEffect(() => {
     if (token) fetchPosts();
@@ -103,7 +122,7 @@ const Dashboard = () => {
     if (postFile) formData.append("file", postFile);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
+      const res = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -126,16 +145,13 @@ const Dashboard = () => {
       const isLiked = currentPost.likes.includes(user._id);
 
       const endpoint = isLiked ? "unlike" : "like";
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/posts/${endpoint}/${postId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${API_URL}/posts/${endpoint}/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (res.ok) {
         // Update the post with new like count and liked status
@@ -162,17 +178,14 @@ const Dashboard = () => {
     if (!newCommentText.trim() || !selectedPostId) return;
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/posts/comment/${selectedPostId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ text: newCommentText }),
-        }
-      );
+      const res = await fetch(`${API_URL}/posts/comment/${selectedPostId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newCommentText }),
+      });
       const data = await res.json();
       if (res.ok) {
         // Update both the posts state and selected post comments
@@ -213,7 +226,7 @@ const Dashboard = () => {
   const handleDeleteComment = async (postId, commentId) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}/${commentId}`,
+        `${API_URL}/posts/comment/${postId}/${commentId}`,
         {
           method: "DELETE",
           headers: {
@@ -250,7 +263,7 @@ const Dashboard = () => {
   const handleUpdateComment = async (postId, commentId, newText) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/posts/comment/${postId}/${commentId}`,
+        `${API_URL}/posts/comment/${postId}/${commentId}`,
         {
           method: "PUT",
           headers: {
@@ -293,7 +306,7 @@ const Dashboard = () => {
     if (profilePicFile) formData.append("profilePic", profilePicFile);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/profile`, {
+      const res = await fetch(`${API_URL}/auth/profile`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
