@@ -53,40 +53,65 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        console.log(
+          "🔗 Fetching user profile from:",
+          `${API_URL}/auth/profile`
+        );
+        console.log("🔑 Using token:", token ? "✅ Present" : "❌ Missing");
+
         const res = await fetch(`${API_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+
+        console.log("📥 Profile response status:", res.status);
+        console.log("📥 Profile response data:", data);
+
         if (res.ok) {
           setUser(data.user);
-          console.log("Profile loaded:", data.user);
+          console.log("✅ Profile loaded successfully:", data.user);
         } else {
-          console.error("Profile fetch failed:", data.msg);
+          console.error("❌ Profile fetch failed:", data.msg);
+          if (res.status === 401) {
+            console.error("🚫 Authentication failed - redirecting to login");
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            navigate("/auth");
+          }
         }
       } catch (err) {
-        console.error("Error fetching profile:", err);
+        console.error("💥 Error fetching profile:", err);
       }
     };
     if (token) fetchUser();
-  }, [token, API_URL]);
+  }, [token, API_URL, navigate]);
 
   // Fetch connected users for chat
   useEffect(() => {
     const fetchChatUsers = async () => {
       try {
+        console.log("🔗 Fetching connections from:", `${API_URL}/connections`);
+
         const res = await fetch(`${API_URL}/connections`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+
+        console.log("📥 Connections response status:", res.status);
+        console.log("📥 Connections response data:", data);
+
         if (res.ok) {
           // Use only connected users for chat sidebar
           setChatUsers(data.connections || []);
-          console.log("Connections loaded:", data.connections?.length || 0);
+          console.log("✅ Connections loaded:", data.connections?.length || 0);
         } else {
-          console.error("Connections fetch failed:", data.msg);
+          console.error("❌ Connections fetch failed:", data.msg);
+          if (res.status === 401) {
+            console.error("🚫 Authentication failed for connections");
+          }
         }
       } catch (err) {
-        console.error("Error fetching connected users:", err);
+        console.error("💥 Error fetching connected users:", err);
       }
     };
     if (token && user) fetchChatUsers();
