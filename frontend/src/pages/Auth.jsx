@@ -24,6 +24,17 @@ const Auth = () => {
   // Use dynamic API URL
   const API = getApiUrl();
 
+  // Debug environment on component load
+  React.useEffect(() => {
+    console.log("Auth component loaded with environment:");
+    console.log("API URL:", API);
+    console.log("Environment variables:", {
+      VITE_USE_PRODUCTION: import.meta.env.VITE_USE_PRODUCTION,
+      MODE: import.meta.env.MODE,
+      VERCEL: import.meta.env.VERCEL,
+    });
+  }, [API]);
+
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (response) => {
@@ -88,32 +99,68 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Attempting authentication with API:", API);
+    console.log("Form data:", isSignUp ? formData : { email: formData.email });
+
     try {
       let res;
 
       if (isSignUp) {
         // Signup request
+        console.log("Making signup request to:", `${API}/auth/register`);
         res = await axios.post(`${API}/auth/register`, formData);
       } else {
         // Signin request
+        console.log("Making signin request to:", `${API}/auth/login`);
         res = await axios.post(`${API}/auth/login`, {
           email: formData.email,
           password: formData.password,
         });
       }
 
+      console.log("Authentication successful:", res.data);
+
+      // Validate response data
+      if (!res.data.token) {
+        throw new Error("No token received from server");
+      }
+      if (!res.data.user || !res.data.user._id) {
+        throw new Error("Invalid user data received from server");
+      }
+
       // Store token + user
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.user._id);
 
+      console.log("Redirecting to dashboard");
       navigate("/dashboard");
     } catch (err) {
-      console.error("Auth error:", err.response?.data || err.message);
-      alert(
-        err.response?.data?.msg ||
-          err.response?.data?.error ||
-          "Error occurred while authenticating"
-      );
+      console.error("Auth error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+        },
+      });
+
+      let errorMessage = "Error occurred while authenticating";
+
+      if (err.response?.data?.msg) {
+        errorMessage = err.response.data.msg;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.status === 400) {
+        errorMessage = "Invalid email or password";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      } else if (err.message === "Network Error") {
+        errorMessage =
+          "Cannot connect to server. Please check your internet connection.";
+      }
+
+      alert(errorMessage);
     }
   };
 

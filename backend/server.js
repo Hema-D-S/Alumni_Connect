@@ -103,6 +103,9 @@ app.use(
       "http://localhost:5173",
       "http://localhost:3000",
       "https://alumni-connect-oe7z.vercel.app",
+      "https://alumni-connect-jd5g.vercel.app", // Your current Vercel URL
+      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
+      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
     ],
     credentials: true,
   })

@@ -83,15 +83,33 @@ exports.register = async (req, res) => {
 // ------------------ LOGIN ------------------
 exports.login = async (req, res) => {
   try {
+    console.log("Login attempt from origin:", req.get("origin"));
+    console.log("Login request body:", {
+      email: req.body.email,
+      hasPassword: !!req.body.password,
+    });
+
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      console.log("Missing email or password");
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "User does not exist" });
+    if (!user) {
+      console.log("User not found for email:", email);
+      return res.status(400).json({ msg: "User does not exist" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    if (!isMatch) {
+      console.log("Invalid password for user:", email);
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
 
     const token = generateToken(user);
+    console.log("Login successful for user:", email);
 
     res.json({
       msg: "Login successful",
