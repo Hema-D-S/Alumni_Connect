@@ -6,6 +6,8 @@ const {
   linkedinAuth,
   getProfile,
   updateProfile,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/authcontroller");
 
 const {
@@ -41,6 +43,10 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/google", googleAuth);
 router.post("/linkedin", linkedinAuth);
+
+// Password reset routes
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 // Profile routes
 router.get("/profile", authMiddleware, getProfile);

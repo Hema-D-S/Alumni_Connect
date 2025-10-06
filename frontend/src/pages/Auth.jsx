@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import "../styles/Auth.css";
-import { FaGoogle, FaLinkedin } from "react-icons/fa";
+import { FaGoogle, FaLinkedin, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { getApiUrl } from "../config/environment";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -15,14 +18,15 @@ const Auth = () => {
     phone: "",
     email: "",
     password: "",
+    confirmPassword: "",
     role: "student",
     batch: "",
   });
 
   const navigate = useNavigate();
 
-  // Use dynamic API URL
-  const API = getApiUrl();
+  // Use hardcoded local API URL to fix connection issue
+  const API = "http://localhost:5000/api";
 
   // Debug environment on component load
   React.useEffect(() => {
@@ -96,26 +100,89 @@ const Auth = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address");
+      return false;
+    }
+
+    if (isSignUp) {
+      if (!formData.firstname.trim()) {
+        alert("First name is required");
+        return false;
+      }
+      if (!formData.lastname.trim()) {
+        alert("Last name is required");
+        return false;
+      }
+      if (!formData.username.trim()) {
+        alert("Username is required");
+        return false;
+      }
+      if (formData.username.length < 3) {
+        alert("Username must be at least 3 characters");
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match");
+        return false;
+      }
+      if (formData.password.length < 6) {
+        alert("Password must be at least 6 characters");
+        return false;
+      }
+      if (!formData.batch || isNaN(formData.batch)) {
+        alert("Please enter a valid batch year");
+        return false;
+      }
+      const currentYear = new Date().getFullYear();
+      if (formData.batch < 1950 || formData.batch > currentYear + 10) {
+        alert("Please enter a realistic batch year");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
 
     console.log("Attempting authentication with API:", API);
     console.log("Form data:", isSignUp ? formData : { email: formData.email });
 
+    setIsLoading(true);
     try {
       let res;
 
       if (isSignUp) {
         // Signup request
         console.log("Making signup request to:", `${API}/auth/register`);
-        res = await axios.post(`${API}/auth/register`, formData);
+        res = await axios.post(`${API}/auth/register`, formData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 10000,
+        });
       } else {
         // Signin request
         console.log("Making signin request to:", `${API}/auth/login`);
-        res = await axios.post(`${API}/auth/login`, {
-          email: formData.email,
-          password: formData.password,
-        });
+        res = await axios.post(
+          `${API}/auth/login`,
+          {
+            email: formData.email,
+            password: formData.password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            timeout: 10000,
+          }
+        );
       }
 
       console.log("Authentication successful:", res.data);
@@ -161,6 +228,61 @@ const Auth = () => {
       }
 
       alert(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!formData.email) {
+      alert("Please enter your email address");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      console.log(
+        "Sending password reset request to:",
+        `${API}/auth/forgot-password`
+      );
+
+      const response = await axios.post(
+        `${API}/auth/forgot-password`,
+        {
+          email: formData.email,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 10000,
+        }
+      );
+
+      console.log("Password reset response:", response.data);
+
+      alert(
+        `Password reset email sent to ${formData.email}. Please check your inbox and spam folder.`
+      );
+      setShowForgotPassword(false);
+    } catch (err) {
+      console.error("Forgot password error:", err);
+
+      let errorMessage = "Error sending reset email. Please try again.";
+
+      if (err.response?.data?.msg) {
+        errorMessage = err.response.data.msg;
+      } else if (err.response?.status === 500) {
+        errorMessage = "Server error. Please try again later.";
+      } else if (err.message === "Network Error") {
+        errorMessage =
+          "Cannot connect to server. Please check your internet connection.";
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -171,8 +293,42 @@ const Auth = () => {
           isSignUp ? "auth-signup-active" : "auth-signin-active"
         }`}
       >
+        {/* ===== Forgot Password Modal ===== */}
+        {showForgotPassword && (
+          <div className="auth-form-container auth-animate">
+            <h2 className="auth-red-text">Reset Password</h2>
+            <form className="auth-form" onSubmit={handleForgotPassword}>
+              <input
+                className="auth-input"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              <button
+                className="auth-submit-btn"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Sending..." : "Send Reset Link"}
+              </button>
+            </form>
+            <p className="auth-toggle-text">
+              Remember your password?{" "}
+              <span
+                className="auth-toggle-link"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                Back to Sign In
+              </span>
+            </p>
+          </div>
+        )}
+
         {/* ===== Sign In Form ===== */}
-        {!isSignUp && (
+        {!isSignUp && !showForgotPassword && (
           <div className="auth-form-container auth-animate">
             <h2 className="auth-red-text">Sign In</h2>
             <div className="auth-social-login">
@@ -199,18 +355,47 @@ const Auth = () => {
                 onChange={handleChange}
                 required
               />
-              <input
-                className="auth-input"
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <p className="auth-forgot">Forgot your password?</p>
-              <button className="auth-submit-btn" type="submit">
-                Sign In
+              <div style={{ position: "relative" }}>
+                <input
+                  className="auth-input"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  style={{ paddingRight: "40px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#666",
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              <p
+                className="auth-forgot"
+                onClick={() => setShowForgotPassword(true)}
+                style={{ cursor: "pointer" }}
+              >
+                Forgot your password?
+              </p>
+              <button
+                className="auth-submit-btn"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
               </button>
             </form>
             <p className="auth-toggle-text">
@@ -226,7 +411,7 @@ const Auth = () => {
         )}
 
         {/* ===== Sign Up Form ===== */}
-        {isSignUp && (
+        {isSignUp && !showForgotPassword && (
           <div className="auth-form-container auth-animate">
             <h2 className="auth-white-text">Create Account</h2>
             <div className="auth-social-login">
@@ -289,15 +474,63 @@ const Auth = () => {
                 onChange={handleChange}
                 required
               />
-              <input
-                className="auth-input"
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  className="auth-input"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password (min 6 characters)"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength="6"
+                  style={{ paddingRight: "40px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#666",
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  className="auth-input"
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  style={{ paddingRight: "40px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#666",
+                  }}
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
               <select
                 className="auth-input"
                 name="role"
@@ -317,8 +550,12 @@ const Auth = () => {
                 onChange={handleChange}
                 required
               />
-              <button className="auth-submit-btn auth-red-btn" type="submit">
-                Sign Up
+              <button
+                className="auth-submit-btn auth-red-btn"
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating Account..." : "Sign Up"}
               </button>
             </form>
             <p className="auth-toggle-text">

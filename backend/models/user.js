@@ -24,11 +24,13 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
     googleId: { type: String },
-    profilePic: { type: String, default: "" },
+    profilePic: { type: String, default: "/uploads/default-profile-black.png" },
     batch: { type: Number, required: true },
     sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     receivedRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     connections: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
 
   { timestamps: true }
