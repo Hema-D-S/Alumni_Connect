@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import LeftSidebar from "../components/LeftSidebar";
 import "../styles/MentorshipPrograms.css";
+import { useUser } from "../hooks/useUser";
 
 const MentorshipPrograms = () => {
+  // Use global user context
+  const { user: currentUser } = useUser();
   const [programs, setPrograms] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -44,19 +46,8 @@ const MentorshipPrograms = () => {
 
   // Fetch current user
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${API}/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok) setCurrentUser(data.user);
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    };
-
-    if (token) fetchUser();
+    // User fetching is now handled by UserContext
+    // User fetching is now handled by UserContext
   }, [API, token]);
 
   // Fetch programs
@@ -194,7 +185,7 @@ const MentorshipPrograms = () => {
 
   return (
     <div className="mentorship-wrapper">
-      <LeftSidebar user={currentUser} openProfileModal={() => {}} />
+      <LeftSidebar />
 
       <main className="mentorship-main">
         <header className="mentorship-topbar">

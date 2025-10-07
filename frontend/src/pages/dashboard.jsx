@@ -4,9 +4,11 @@ import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
+  // Use global user context
+  const { user, updateUser } = useUser();
   const [posts, setPosts] = useState([]);
   const [chatUsers, setChatUsers] = useState([]);
   const [newPostText, setNewPostText] = useState("");
@@ -50,41 +52,7 @@ const Dashboard = () => {
   };
 
   // Fetch logged-in user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        console.log(
-          "🔗 Fetching user profile from:",
-          `${API_URL}/auth/profile`
-        );
-        console.log("🔑 Using token:", token ? "✅ Present" : "❌ Missing");
-
-        const res = await fetch(`${API_URL}/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-
-        console.log("Profile response status:", res.status);
-        console.log(" Profile response data:", data);
-
-        if (res.ok) {
-          setUser(data.user);
-          console.log(" Profile loaded successfully:", data.user);
-        } else {
-          console.error(" Profile fetch failed:", data.msg);
-          if (res.status === 401) {
-            console.error(" Authentication failed - redirecting to login");
-            localStorage.removeItem("token");
-            localStorage.removeItem("userId");
-            navigate("/auth");
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      }
-    };
-    if (token) fetchUser();
-  }, [token, API_URL, navigate]);
+  // User fetching is now handled by UserContext - no need for local fetch
 
   // Fetch connected users for chat
   useEffect(() => {
@@ -338,7 +306,7 @@ const Dashboard = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        setUser(data.user);
+        updateUser(data.user);
         setShowProfileModal(false);
       }
     } catch (err) {
@@ -348,10 +316,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <LeftSidebar
-        user={user}
-        openProfileModal={() => setShowProfileModal(true)}
-      />
+      <LeftSidebar openProfileModal={() => setShowProfileModal(true)} />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed">

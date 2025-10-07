@@ -4,20 +4,24 @@ import LeftSidebar from "../components/LeftSidebar";
 import { FaPaperPlane, FaUserPlus } from "react-icons/fa";
 import io from "socket.io-client";
 import "../styles/FindUsers.css";
+import "../styles/Dashboard.css"; // For ProfileModal styles
+import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:5000";
+// Environment variables
+const API = getApiUrl();
+const BASE_URL = getBaseUrl();
 
 // Connect to socket
-const socket = io(import.meta.env.VITE_WS_URL || "http://localhost:5000");
+const socket = io(getWsUrl());
 
 const FindUsers = () => {
+  // Keep local state for connection management (complex state)
+  const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
   const [suggested, setSuggested] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentUser, setCurrentUser] = useState(null);
   const [showSentRequests, setShowSentRequests] = useState(false);
   const [showReceivedRequests, setShowReceivedRequests] = useState(false);
 
@@ -232,7 +236,7 @@ const FindUsers = () => {
 
   return (
     <div className="findusers-wrapper">
-      <LeftSidebar user={currentUser} openProfileModal={() => {}} />
+      <LeftSidebar />
 
       <main className="findusers-main">
         <header className="findusers-topbar">

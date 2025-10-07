@@ -4,6 +4,7 @@ import LeftSidebar from "../components/LeftSidebar";
 import { io } from "socket.io-client";
 import { useSearchParams } from "react-router-dom";
 import "../styles/ChatPage.css";
+import "../styles/Dashboard.css"; // For ProfileModal styles
 import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
 
 /* ------------------- Decode JWT ------------------- */
@@ -39,7 +40,6 @@ const ChatPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null); // Add current user state
   const [selfId, setSelfId] = useState(
     () => localStorage.getItem("userId") || null
   );
@@ -145,11 +145,8 @@ const ChatPage = () => {
         setLoadingUsers(true);
         const token = localStorage.getItem("token");
 
-        // Fetch current user profile
-        const userRes = await axios.get(`${API}/auth/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setCurrentUser(userRes.data.user);
+        // Fetch current user profile (now handled by UserContext)
+        // Current user is available from global context
 
         // Fetch connected users
         const connectionsRes = await axios.get(`${API}/connections`, {
@@ -233,10 +230,9 @@ const ChatPage = () => {
   const getFromId = (msg) =>
     typeof msg.from === "object" ? msg.from?._id : msg.from;
 
-  /* ------------------- UI ------------------- */
   return (
     <div className="chatpage-wrapper">
-      <LeftSidebar user={currentUser} />
+      <LeftSidebar />
 
       <div className="chatpage-middle">
         {selectedUser ? (

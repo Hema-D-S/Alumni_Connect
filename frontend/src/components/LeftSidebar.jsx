@@ -5,8 +5,11 @@ import "../styles/Dashboard.css";
 import "../styles/SidebarCommon.css";
 import { getBaseUrl } from "../config/environment";
 import ProfileModal from "./ProfileModal";
+import { useUser } from "../hooks/useUser";
 
-const LeftSidebar = ({ user, openProfileModal, onUserUpdate }) => {
+const LeftSidebar = ({ openProfileModal }) => {
+  // Use global user context
+  const { user, logout: logoutUser, updateUser } = useUser();
   // Use dynamic base URL
   const BASE_URL = getBaseUrl();
   const navigate = useNavigate();
@@ -17,10 +20,8 @@ const LeftSidebar = ({ user, openProfileModal, onUserUpdate }) => {
     // Confirm logout
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     if (confirmLogout) {
-      // Clear localStorage
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-
+      // Use context logout function
+      logoutUser();
       // Redirect to auth page
       navigate("/auth");
     }
@@ -93,7 +94,7 @@ const LeftSidebar = ({ user, openProfileModal, onUserUpdate }) => {
         user={user}
         isOpen={showInternalProfileModal}
         onClose={() => setShowInternalProfileModal(false)}
-        onUserUpdate={onUserUpdate}
+        onUserUpdate={updateUser}
       />
     </aside>
   );
