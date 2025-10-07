@@ -1,13 +1,40 @@
 // src/components/LeftSidebar.jsx
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 import "../styles/SidebarCommon.css";
 import { getBaseUrl } from "../config/environment";
+import ProfileModal from "./ProfileModal";
 
-const LeftSidebar = ({ user, openProfileModal }) => {
+const LeftSidebar = ({ user, openProfileModal, onUserUpdate }) => {
   // Use dynamic base URL
   const BASE_URL = getBaseUrl();
+  const navigate = useNavigate();
+  const [showInternalProfileModal, setShowInternalProfileModal] =
+    useState(false);
+
+  const handleLogout = () => {
+    // Confirm logout
+    const confirmLogout = window.confirm("Are you sure you want to logout?");
+    if (confirmLogout) {
+      // Clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+
+      // Redirect to auth page
+      navigate("/auth");
+    }
+  };
+
+  const handleProfileClick = () => {
+    if (openProfileModal && typeof openProfileModal === "function") {
+      // Use external profile modal if provided (like in Dashboard)
+      openProfileModal(true);
+    } else {
+      // Use internal profile modal for other pages
+      setShowInternalProfileModal(true);
+    }
+  };
 
   return (
     <aside className="dashboard-sidebar sidebar-common">
@@ -42,12 +69,32 @@ const LeftSidebar = ({ user, openProfileModal }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            openProfileModal(true);
+            handleProfileClick();
           }}
+          className="profile-action-btn"
         >
           <i className="fas fa-user-circle"></i> My Profile
         </a>
+
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleLogout();
+          }}
+          className="logout-action-btn"
+        >
+          <i className="fas fa-sign-out-alt"></i> Logout
+        </a>
       </div>
+
+      {/* Internal Profile Modal for pages that don't have their own */}
+      <ProfileModal
+        user={user}
+        isOpen={showInternalProfileModal}
+        onClose={() => setShowInternalProfileModal(false)}
+        onUserUpdate={onUserUpdate}
+      />
     </aside>
   );
 };
