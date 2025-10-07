@@ -1,5 +1,5 @@
 // src/components/LeftSidebar.jsx
-import React, { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 import "../styles/SidebarCommon.css";
@@ -7,7 +7,7 @@ import { getBaseUrl } from "../config/environment";
 import ProfileModal from "./ProfileModal";
 import { useUser } from "../hooks/useUser";
 
-const LeftSidebar = ({ openProfileModal }) => {
+const LeftSidebar = memo(({ openProfileModal }) => {
   // Use global user context
   const { user, logout: logoutUser, updateUser } = useUser();
   // Use dynamic base URL
@@ -16,7 +16,7 @@ const LeftSidebar = ({ openProfileModal }) => {
   const [showInternalProfileModal, setShowInternalProfileModal] =
     useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     // Confirm logout
     const confirmLogout = window.confirm("Are you sure you want to logout?");
     if (confirmLogout) {
@@ -25,9 +25,9 @@ const LeftSidebar = ({ openProfileModal }) => {
       // Redirect to auth page
       navigate("/auth");
     }
-  };
+  }, [logoutUser, navigate]);
 
-  const handleProfileClick = () => {
+  const handleProfileClick = useCallback(() => {
     if (openProfileModal && typeof openProfileModal === "function") {
       // Use external profile modal if provided (like in Dashboard)
       openProfileModal(true);
@@ -35,7 +35,7 @@ const LeftSidebar = ({ openProfileModal }) => {
       // Use internal profile modal for other pages
       setShowInternalProfileModal(true);
     }
-  };
+  }, [openProfileModal]);
 
   return (
     <aside className="dashboard-sidebar sidebar-common">
@@ -98,6 +98,8 @@ const LeftSidebar = ({ openProfileModal }) => {
       />
     </aside>
   );
-};
+});
+
+LeftSidebar.displayName = "LeftSidebar";
 
 export default LeftSidebar;

@@ -8,7 +8,7 @@ import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
   // Use global user context
-  const { user, updateUser } = useUser();
+  const { user, updateUser, loading } = useUser();
   const [posts, setPosts] = useState([]);
   const [chatUsers, setChatUsers] = useState([]);
   const [newPostText, setNewPostText] = useState("");
@@ -85,21 +85,34 @@ const Dashboard = () => {
     if (token && user) fetchChatUsers();
   }, [token, user, API_URL]);
 
-  // Fetch all posts
+  // Fetch posts with pagination for better performance
   const fetchPosts = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/posts`, {
+      console.log("Dashboard - Fetching posts with category filter: dashboard");
+      const url = `${API_URL}/posts?category=dashboard&limit=20&sort=-createdAt`;
+      console.log("Dashboard - Request URL:", url);
+
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      console.log("Dashboard - Response status:", res.status);
+
       const data = await res.json();
+      console.log("Dashboard - Response data:", data);
+
       if (res.ok) {
         setPosts(data.posts || []);
-        console.log("Posts loaded:", data.posts?.length || 0);
+        console.log("Dashboard - Posts loaded:", data.posts?.length || 0);
+        console.log("Dashboard - Posts sample:", data.posts?.slice(0, 2));
       } else {
-        console.error("Posts fetch failed:", data.msg);
+        console.error(
+          "Dashboard - Posts fetch failed:",
+          data.msg || data.error
+        );
       }
     } catch (err) {
-      console.error("Error fetching posts:", err);
+      console.error("Dashboard - Error fetching posts:", err);
     }
   }, [token, API_URL]);
 
@@ -112,6 +125,7 @@ const Dashboard = () => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("text", newPostText);
+    formData.append("category", "dashboard");
     if (postFile) formData.append("file", postFile);
 
     try {
@@ -122,7 +136,7 @@ const Dashboard = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        setPosts([data, ...posts]);
+        setPosts([data.post, ...posts]);
         setNewPostText("");
         setPostFile(null);
       }
@@ -314,9 +328,32 @@ const Dashboard = () => {
     }
   };
 
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleOpenProfileModal = useCallback(
+    () => setShowProfileModal(true),
+    []
+  );
+
+  // Show loading state if user data is still loading
+  if (loading) {
+    return (
+      <div className="dashboard-wrapper">
+        <div className="loading-container">
+          <div className="loading-spinner">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-wrapper">
-      <LeftSidebar openProfileModal={() => setShowProfileModal(true)} />
+      <LeftSidebar openProfileModal={handleOpenProfileModal} />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed">
@@ -336,18 +373,33 @@ const Dashboard = () => {
             <form onSubmit={handleCreatePost}>
               <input
                 type="text"
-                placeholder="Start making your post..."
+                placeholder="What's on your mind? Share your thoughts, achievements, or updates..."
                 value={newPostText}
                 onChange={(e) => setNewPostText(e.target.value)}
                 required
               />
-              <input
-                type="file"
-                onChange={(e) => setPostFile(e.target.files[0])}
-                accept="image/*,video/*,.pdf,.docx"
-              />
+
+              <div className="file-upload-container">
+                <label htmlFor="postFileInput" className="file-upload-label">
+                  <i className="fas fa-paperclip"></i>
+                  {postFile
+                    ? `Selected: ${postFile.name}`
+                    : "Attach Photo/Document"}
+                </label>
+                <input
+                  id="postFileInput"
+                  type="file"
+                  onChange={(e) => setPostFile(e.target.files[0])}
+                  accept="image/*,video/*,.pdf,.docx"
+                  style={{ display: "none" }}
+                />
+              </div>
+
               <div className="dashboard-actions">
-                <button type="submit">Post</button>
+                <button type="submit">
+                  <i className="fas fa-paper-plane"></i>
+                  Share Post
+                </button>
               </div>
             </form>
           </div>

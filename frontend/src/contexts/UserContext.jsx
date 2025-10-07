@@ -1,5 +1,11 @@
 // src/contexts/UserContext.jsx
-import React, { createContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import axios from "axios";
 import { getApiUrl } from "../config/environment";
 
@@ -34,8 +40,15 @@ export const UserProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch user data
+  // Fetch user data with early return optimization
   const fetchUser = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoading(false);
+      setInitialized(true);
+      return;
+    }
+
     try {
       const userId = decodeUserIdFromToken();
       if (!userId) {
@@ -44,7 +57,6 @@ export const UserProvider = ({ children }) => {
         return;
       }
 
-      const token = localStorage.getItem("token");
       const response = await axios.get(`${API}/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -65,16 +77,16 @@ export const UserProvider = ({ children }) => {
   }, [API, decodeUserIdFromToken]);
 
   // Update user data
-  const updateUser = (updatedUser) => {
+  const updateUser = useCallback((updatedUser) => {
     setUser(updatedUser);
-  };
+  }, []);
 
   // Logout function
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     setUser(null);
-  };
+  }, []);
 
   // Initialize user data on mount
   useEffect(() => {
@@ -101,14 +113,17 @@ export const UserProvider = ({ children }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [fetchUser]);
 
-  const value = {
-    user,
-    loading,
-    initialized,
-    updateUser,
-    logout,
-    refetchUser: fetchUser,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      initialized,
+      updateUser,
+      logout,
+      refetchUser: fetchUser,
+    }),
+    [user, loading, initialized, updateUser, logout, fetchUser]
+  );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
