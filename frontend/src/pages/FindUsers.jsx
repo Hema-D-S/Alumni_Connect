@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import LeftSidebar from "../components/LeftSidebar";
-import { FaPaperPlane, FaUserPlus } from "react-icons/fa";
+import { FaPaperPlane, FaUserPlus, FaBars, FaTimes } from "react-icons/fa";
 import io from "socket.io-client";
 import "../styles/FindUsers.css";
 import "../styles/Dashboard.css"; // For ProfileModal styles
@@ -24,6 +24,7 @@ const FindUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSentRequests, setShowSentRequests] = useState(false);
   const [showReceivedRequests, setShowReceivedRequests] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -236,7 +237,25 @@ const FindUsers = () => {
 
   return (
     <div className="findusers-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar 
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       <main className="findusers-main">
         <header className="findusers-topbar">

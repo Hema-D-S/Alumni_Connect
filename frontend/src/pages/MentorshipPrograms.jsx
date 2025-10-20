@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import LeftSidebar from "../components/LeftSidebar";
+import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/MentorshipPrograms.css";
 import { useUser } from "../hooks/useUser";
 
@@ -14,6 +15,7 @@ const MentorshipPrograms = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [newProgram, setNewProgram] = useState({
     title: "",
     description: "",
@@ -185,7 +187,25 @@ const MentorshipPrograms = () => {
 
   return (
     <div className="mentorship-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar 
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       <main className="mentorship-main">
         <header className="mentorship-topbar">

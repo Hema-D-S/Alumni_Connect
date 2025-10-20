@@ -3,6 +3,7 @@ import axios from "axios";
 import LeftSidebar from "../components/LeftSidebar";
 import { io } from "socket.io-client";
 import { useSearchParams } from "react-router-dom";
+import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/ChatPage.css";
 import "../styles/Dashboard.css"; // For ProfileModal styles
 import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
@@ -43,6 +44,7 @@ const ChatPage = () => {
   const [selfId, setSelfId] = useState(
     () => localStorage.getItem("userId") || null
   );
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   /* ------------------- URL Parameters ------------------- */
   const [searchParams] = useSearchParams();
@@ -232,7 +234,25 @@ const ChatPage = () => {
 
   return (
     <div className="chatpage-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button 
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar 
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       <div className="chatpage-middle">
         {selectedUser ? (
