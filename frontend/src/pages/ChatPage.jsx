@@ -235,7 +235,7 @@ const ChatPage = () => {
   return (
     <div className="chatpage-wrapper">
       {/* Mobile Menu Toggle */}
-      <button 
+      <button
         className="mobile-menu-toggle"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label="Toggle menu"
@@ -244,12 +244,12 @@ const ChatPage = () => {
       </button>
 
       {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
       ></div>
 
-      <LeftSidebar 
+      <LeftSidebar
         isMobileOpen={isMobileMenuOpen}
         closeMobileMenu={() => setIsMobileMenuOpen(false)}
       />
@@ -263,9 +263,9 @@ const ChatPage = () => {
 
             <div className="chatpage-messages">
               {loadingMessages ? (
-                <p>Loading messages...</p>
+                <p className="loading-text">Loading messages...</p>
               ) : messages.length === 0 ? (
-                <p>No messages yet.</p>
+                <p className="loading-text">No messages yet.</p>
               ) : (
                 messages.map((msg, idx) => {
                   const isSent =
@@ -314,9 +314,9 @@ const ChatPage = () => {
       <div className="chatpage-right">
         <h3>Connections</h3>
         {loadingUsers ? (
-          <p>Loading users...</p>
+          <p className="loading-text">Loading users...</p>
         ) : connectedUsers.length === 0 ? (
-          <p>No connections found.</p>
+          <p className="loading-text">No connections found.</p>
         ) : (
           connectedUsers.map((user) => (
             <div

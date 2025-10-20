@@ -449,7 +449,7 @@ const StudentsAchievements = () => {
               }}
             >
               {!user ? (
-                <p>Loading user information...</p>
+                <p className="loading-text">Loading user information...</p>
               ) : user.role !== "student" ? (
                 <p>
                   Only students can post achievements. Your role: {user.role}

@@ -188,7 +188,7 @@ const MentorshipPrograms = () => {
   return (
     <div className="mentorship-wrapper">
       {/* Mobile Menu Toggle */}
-      <button 
+      <button
         className="mobile-menu-toggle"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label="Toggle menu"
@@ -197,12 +197,12 @@ const MentorshipPrograms = () => {
       </button>
 
       {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
         onClick={() => setIsMobileMenuOpen(false)}
       ></div>
 
-      <LeftSidebar 
+      <LeftSidebar
         isMobileOpen={isMobileMenuOpen}
         closeMobileMenu={() => setIsMobileMenuOpen(false)}
       />

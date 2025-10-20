@@ -162,38 +162,55 @@
   object-fit: cover;
 }
 
+/* Loading States - Centered */
+.chatpage-messages p {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 16px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chatpage-right p {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .mobile-menu-toggle {
     display: block;
   }
-  
+
   .mobile-overlay.active {
     display: block;
   }
-  
+
   .chatpage-wrapper {
     padding-top: 60px; /* Space for mobile menu */
   }
-  
+
   .chatpage-middle {
     margin-left: 0;
     width: 100%;
   }
-  
+
   .chatpage-header {
     padding: 10px 60px 10px 15px; /* Space for menu button */
     font-size: 16px;
   }
-  
+
   .chatpage-messages {
     padding: 10px;
   }
-  
+
   .chatpage-input-container {
     padding: 10px;
   }
-  
+
   .chatpage-input-container input {
     font-size: 16px; /* Prevents zoom on iOS */
   }
@@ -203,17 +220,17 @@
   .chatpage-wrapper {
     padding-top: 55px;
   }
-  
+
   .chatpage-header {
     padding: 8px 50px 8px 12px;
     font-size: 15px;
   }
-  
+
   .chatpage-message {
     padding: 8px 12px;
     font-size: 14px;
   }
-  
+
   .chatpage-right .chatpage-user-item {
     padding: 8px;
   }
