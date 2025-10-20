@@ -6,6 +6,8 @@ import {
   FaRegComment,
   FaEllipsisV,
   FaGraduationCap,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
@@ -26,6 +28,7 @@ const AlumniHighlights = () => {
   const [newPostText, setNewPostText] = useState("");
   const [postFile, setPostFile] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -246,7 +249,25 @@ const AlumniHighlights = () => {
 
   return (
     <div className="dashboard-wrapper alumni-highlights-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed alumni-highlights-feed">

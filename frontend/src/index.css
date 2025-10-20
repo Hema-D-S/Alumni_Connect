@@ -17,6 +17,10 @@ body {
   line-height: 1.5;
   color: #333;
   background-color: #f9f9f9;
+  /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  /* Better text rendering on mobile */
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Ensure consistent font rendering */
@@ -40,4 +44,55 @@ input,
 textarea,
 select {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/* Global Mobile Responsive Utilities */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better mobile touch targets */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  input[type="button"],
+  input[type="submit"],
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent zoom on form inputs on iOS */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Better spacing for mobile */
+  .container,
+  .wrapper,
+  .content {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid #a30027;
+  outline-offset: 2px;
 }

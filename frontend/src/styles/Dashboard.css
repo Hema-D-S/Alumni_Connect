@@ -5,6 +5,36 @@
   background: #f9f9f9;
   overflow: hidden;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+/* Mobile menu toggle */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background: #a30027;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
 }
 
 /* Sidebar */
@@ -17,6 +47,21 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 999;
+  position: relative;
+}
+
+.dashboard-sidebar.mobile-open {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  transform: translateX(0);
+  z-index: 999;
+}
+
+.dashboard-sidebar.mobile-closed {
+  transform: translateX(-100%);
 }
 
 .dashboard-profile {
@@ -849,18 +894,188 @@
     width: 200px;
   }
 }
+
 @media (max-width: 768px) {
-  .dashboard-sidebar {
-    display: none;
+  .mobile-menu-toggle {
+    display: block;
   }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+
+  .dashboard-wrapper {
+    padding-top: 60px; /* Space for mobile menu */
+  }
+
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    z-index: 999;
+    width: 280px; /* Slightly wider on mobile for touch */
+  }
+
+  .dashboard-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
   .dashboard-chat {
     display: none;
   }
+
   .dashboard-feed {
     flex: 1;
+    margin-left: 0;
   }
+
+  .dashboard-topbar {
+    padding: 10px 60px 10px 20px; /* Space for menu button */
+    flex-wrap: wrap;
+  }
+
   .dashboard-topbar input {
     width: 100%;
+    margin-top: 10px;
+  }
+
+  /* Make posts more mobile-friendly */
+  .dashboard-post {
+    margin: 10px;
+    border-radius: 12px;
+  }
+
+  .dashboard-post-content {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* Improve button sizes for touch */
+  .dashboard-footer-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 44px; /* iOS recommended touch target */
+  }
+
+  /* Profile images */
+  .dashboard-profile img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .dashboard-post-author img {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-wrapper {
+    padding-top: 55px;
+  }
+
+  .dashboard-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 50px 15px 15px;
+  }
+
+  .dashboard-topbar input {
+    margin-top: 5px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .dashboard-modal {
+    width: 95%;
+    padding: 15px;
+    margin: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .dashboard-comment-modal {
+    width: 98%;
+    max-height: 85vh;
+    margin: 5px;
+  }
+
+  /* Smaller profile in mobile sidebar */
+  .dashboard-sidebar .dashboard-profile img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .dashboard-name {
+    font-size: 16px;
+  }
+
+  .dashboard-username {
+    font-size: 13px;
+  }
+
+  /* Menu items with larger touch targets */
+  .dashboard-menu a {
+    padding: 15px 12px;
+    font-size: 16px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Post images */
+  .dashboard-post img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  /* Form inputs */
+  .dashboard-post-input,
+  .dashboard-modal input,
+  .dashboard-modal textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  /* Chat users section - hide on very small screens */
+  .dashboard-chat-users {
+    display: none;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .mobile-menu-toggle {
+    top: 10px;
+    left: 10px;
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .dashboard-wrapper {
+    padding-top: 50px;
+  }
+
+  .dashboard-sidebar {
+    width: 90%;
+  }
+
+  .dashboard-topbar {
+    padding: 8px 40px 12px 10px;
+  }
+
+  .dashboard-post {
+    margin: 5px;
+    padding: 12px;
+  }
+
+  .dashboard-modal {
+    width: 98%;
+    padding: 12px;
   }
 }
 
@@ -1381,19 +1596,7 @@
 }
 
 @media (max-width: 480px) {
-  .dashboard-topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .dashboard-modal {
-    width: 90%;
-    padding: 20px;
-  }
-  .dashboard-comment-modal {
-    width: 95%;
-    max-height: 90vh;
-  }
+  /* This section is now handled above in the comprehensive mobile section */
 }
 
 /* Loading States */

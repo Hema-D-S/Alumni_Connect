@@ -7,6 +7,8 @@ import {
   FaEllipsisV,
   FaTrophy,
   FaCamera,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
@@ -29,6 +31,7 @@ const StudentsAchievements = () => {
   const [isPosting, setIsPosting] = useState(false);
   // Menu state
   const [selectedPostMenu, setSelectedPostMenu] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -310,7 +313,25 @@ const StudentsAchievements = () => {
 
   return (
     <div className="dashboard-wrapper students-achievements-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed students-achievements-feed">

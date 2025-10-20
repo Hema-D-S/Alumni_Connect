@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "../styles/Dashboard.css";
-import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
+import {
+  FaThumbsUp,
+  FaRegComment,
+  FaEllipsisV,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import { getApiUrl, getBaseUrl } from "../config/environment";
@@ -26,6 +32,7 @@ const Dashboard = () => {
   const [editingComment, setEditingComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [newCommentText, setNewCommentText] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -353,7 +360,26 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <LeftSidebar openProfileModal={handleOpenProfileModal} />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        openProfileModal={handleOpenProfileModal}
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed">

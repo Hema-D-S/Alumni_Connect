@@ -340,3 +340,56 @@
 .dashboard-dropdown-item.delete:hover {
   background: #ffeaea;
 }
+
+/* Mobile Responsive Styles for Alumni Highlights */
+@media (max-width: 768px) {
+  .alumni-highlights-wrapper {
+    padding-top: 60px;
+  }
+
+  .alumni-highlights-header {
+    padding: 15px 60px 15px 20px;
+    flex-wrap: wrap;
+  }
+
+  .alumni-highlights-header .dashboard-app-title {
+    font-size: 20px;
+  }
+
+  .alumni-highlights-header input {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  .alumni-highlights-feed .dashboard-feed-scroll {
+    padding: 15px 10px;
+  }
+
+  .alumni-highlights-feed .dashboard-post {
+    margin: 10px 0;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .alumni-highlights-wrapper {
+    padding-top: 55px;
+  }
+
+  .alumni-highlights-header {
+    padding: 10px 50px 15px 15px;
+  }
+
+  .alumni-highlights-header .dashboard-app-title {
+    font-size: 18px;
+  }
+
+  .alumni-icon {
+    font-size: 18px;
+  }
+
+  .alumni-highlights-feed .dashboard-feed-scroll {
+    padding: 10px 5px;
+  }
+}
