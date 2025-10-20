@@ -7,6 +7,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/ChatPage.css";
 import "../styles/Dashboard.css"; // For ProfileModal styles
 import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 
 /* ------------------- Decode JWT ------------------- */
 function decodeUserIdFromToken() {
@@ -329,11 +330,7 @@ const ChatPage = () => {
               onClick={() => handleUserClick(user)}
             >
               <img
-                src={
-                  user.profilePic
-                    ? `${BASE_URL}/${user.profilePic}`
-                    : "https://via.placeholder.com/40"
-                }
+                src={getProfilePicUrl(user.profilePic)}
                 alt={user.firstname}
               />
               <span>

@@ -3,7 +3,7 @@ import React, { useState, memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 import "../styles/SidebarCommon.css";
-import { getBaseUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import ProfileModal from "./ProfileModal";
 import { useUser } from "../hooks/useUser";
 
@@ -11,8 +11,6 @@ const LeftSidebar = memo(
   ({ openProfileModal, isMobileOpen, closeMobileMenu }) => {
     // Use global user context
     const { user, logout: logoutUser, updateUser } = useUser();
-    // Use dynamic base URL
-    const BASE_URL = getBaseUrl();
     const navigate = useNavigate();
     const [showInternalProfileModal, setShowInternalProfileModal] =
       useState(false);
@@ -54,14 +52,7 @@ const LeftSidebar = memo(
         }`}
       >
         <div className="dashboard-profile">
-          <img
-            src={
-              user?.profilePic
-                ? `${BASE_URL}/${user.profilePic}` // ✅ Fixed: use BASE_URL instead of API
-                : "https://via.placeholder.com/80"
-            }
-            alt="Profile"
-          />
+          <img src={getProfilePicUrl(user?.profilePic)} alt="Profile" />
           <h2 className="dashboard-name sidebar-profile-name">
             {user ? user.firstname : "Loading..."}
           </h2>

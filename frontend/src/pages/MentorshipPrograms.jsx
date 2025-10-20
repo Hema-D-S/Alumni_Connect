@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import LeftSidebar from "../components/LeftSidebar";
 import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/MentorshipPrograms.css";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const MentorshipPrograms = () => {
@@ -167,13 +168,6 @@ const MentorshipPrograms = () => {
         .includes(searchQuery.toLowerCase()) ||
       program.mentor.lastname.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  // Helper to get profile pic URL
-  const getProfilePicUrl = (pic) => {
-    if (!pic) return "https://via.placeholder.com/40";
-    if (pic.startsWith("http")) return pic;
-    return `${BASE_URL}/${pic}`;
-  };
 
   // Check if user has applied to program
   const hasApplied = (program) => {

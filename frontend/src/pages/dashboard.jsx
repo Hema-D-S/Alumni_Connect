@@ -10,6 +10,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
@@ -45,13 +46,6 @@ const Dashboard = () => {
       navigate("/auth");
     }
   }, [token, navigate]);
-
-  // Helper to get profile pic URL
-  const getProfilePicUrl = (pic) => {
-    if (!pic) return "https://via.placeholder.com/100";
-    if (pic.startsWith("http")) return pic;
-    return `${BASE_URL}/${pic}`;
-  };
 
   // Handle chat click navigation
   const handleChatClick = (userId) => {

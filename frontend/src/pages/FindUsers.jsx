@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import "../styles/FindUsers.css";
 import "../styles/Dashboard.css"; // For ProfileModal styles
 import { getApiUrl, getBaseUrl, getWsUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 
 // Environment variables
 const API = getApiUrl();
@@ -227,13 +228,6 @@ const FindUsers = () => {
     const fullName = `${u.firstname} ${u.lastname}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
   });
-
-  // Helper to get profile pic URL
-  const getProfilePicUrl = (pic) => {
-    if (!pic) return "https://via.placeholder.com/100";
-    if (pic.startsWith("http")) return pic;
-    return `${BASE_URL}/${pic}`;
-  };
 
   return (
     <div className="findusers-wrapper">

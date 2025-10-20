@@ -12,6 +12,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const AlumniHighlights = () => {
@@ -291,11 +292,7 @@ const AlumniHighlights = () => {
             <div className="dashboard-create-post">
               <div className="dashboard-create-post-header">
                 <img
-                  src={
-                    user?.profilePic
-                      ? `${BASE_URL}/${user.profilePic}`
-                      : "https://via.placeholder.com/40"
-                  }
+                  src={getProfilePicUrl(user?.profilePic)}
                   alt="Your profile"
                   className="dashboard-create-post-avatar"
                 />
@@ -367,11 +364,7 @@ const AlumniHighlights = () => {
                 <div key={post._id} className="dashboard-post alumni-post">
                   <div className="dashboard-post-header">
                     <img
-                      src={
-                        post.user?.profilePic
-                          ? `${BASE_URL}/${post.user.profilePic}`
-                          : "https://via.placeholder.com/40"
-                      }
+                      src={getProfilePicUrl(post.user?.profilePic)}
                       alt="Author"
                       className="dashboard-post-avatar"
                     />
@@ -461,11 +454,7 @@ const AlumniHighlights = () => {
                 {selectedPostComments.map((comment) => (
                   <div key={comment._id} className="dashboard-comment">
                     <img
-                      src={
-                        comment.author?.profilePic
-                          ? `${BASE_URL}/${comment.author.profilePic}`
-                          : "https://via.placeholder.com/30"
-                      }
+                      src={getProfilePicUrl(comment.author?.profilePic)}
                       alt="Commenter"
                       className="dashboard-comment-avatar"
                     />
