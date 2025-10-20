@@ -642,6 +642,26 @@
   }
 }
 
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .findusers-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
 /* Mobile responsiveness improvements */
 @media (max-width: 768px) {
   .mobile-menu-toggle {
@@ -671,7 +691,6 @@
     margin-top: 10px;
   }
 }
-
 @media (max-width: 480px) {
   .findusers-wrapper {
     padding-top: 55px;

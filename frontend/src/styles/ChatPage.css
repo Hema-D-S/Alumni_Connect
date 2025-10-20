@@ -179,6 +179,26 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .chatpage-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .mobile-menu-toggle {

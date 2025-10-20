@@ -169,6 +169,26 @@
   font-weight: 500;
 }
 
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .alumni-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .alumni-highlights-header .dashboard-app-title {
