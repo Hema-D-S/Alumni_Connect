@@ -25,8 +25,8 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
-  // Use hardcoded local API URL to fix connection issue
-  const API = "http://localhost:5000/api";
+  // Dynamic API URL for both development and production
+  const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   // Debug environment on component load
   React.useEffect(() => {

@@ -14,16 +14,22 @@ const app = express();
 const server = http.createServer(app);
 
 // ---------------- Socket.IO Setup ----------------
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [
+        process.env.FRONTEND_URL,
+        /\.vercel\.app$/, // Allow all Vercel preview deployments
+        /\.onrender\.com$/, // Allow Render deployments
+      ].filter(Boolean)
+    : [
+        "http://localhost:5173", // Vite default
+        "http://localhost:3000", // React default
+        "http://localhost:5000", // Alternative local
+      ];
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://alumni-connect-oe7z.vercel.app", // Production
-      "https://alumni-connect-jd5g.vercel.app", // Your new Vercel URL
-      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "http://localhost:5173", // Local development
-      "http://localhost:3000", // Alternative local port
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -95,21 +101,28 @@ app.set("io", io);
 
 // ---------------- Middleware ----------------
 app.use(express.json());
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-app.use(
-  cors({
-    origin: [
-      FRONTEND_URL,
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://alumni-connect-oe7z.vercel.app",
-      "https://alumni-connect-jd5g.vercel.app", // Your current Vercel URL
-      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
-    ],
-    credentials: true,
-  })
-);
+
+// Dynamic CORS configuration for development and production
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? [
+          process.env.FRONTEND_URL,
+          /\.vercel\.app$/, // Allow all Vercel preview deployments
+          /\.onrender\.com$/, // Allow Render deployments
+        ].filter(Boolean)
+      : [
+          "http://localhost:5173", // Vite default
+          "http://localhost:3000", // React default
+          "http://localhost:5000", // Alternative local
+        ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ---------------- Routes ----------------
