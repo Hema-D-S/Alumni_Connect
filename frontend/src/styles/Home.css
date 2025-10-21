@@ -4,6 +4,7 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Main Wrapper */
@@ -11,6 +12,7 @@ body,
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  position: relative;
 }
 
 /* ---------------- NAVBAR ---------------- */
@@ -166,6 +168,7 @@ body,
   background-repeat: no-repeat;
   position: relative;
   z-index: 1;
+  min-height: 100vh; /* Ensure full height on mobile */
 }
 
 /* Expanding red border frame */
@@ -175,8 +178,8 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  border: 1.5vw solid #a30027;
-  border-radius: 1vw;
+  border: clamp(0.5rem, 1.5vw, 2rem) solid #a30027;
+  border-radius: clamp(0.5rem, 1vw, 1.5rem);
   box-sizing: border-box;
   transform: scale(0);
   transform-origin: center;
@@ -252,32 +255,219 @@ body,
 }
 
 /* --------------- RESPONSIVE NAVBAR ---------------- */
-@media (max-width: 900px) {
+
+/* Mobile Menu Toggle */
+.home-mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+/* Mobile Overlay */
+.home-mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.home-mobile-overlay.active {
+  opacity: 1;
+}
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
   .home-navbar {
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
-    height: auto;
+    padding: 1rem 1.5rem;
   }
-
+  
   .home-nav-links {
-    flex-direction: column;
     gap: 1rem;
-    width: 100%;
-    margin-top: 0.5rem;
-    align-items: center;
   }
-
+  
   .home-nav-links li a {
-    font-size: 2rem;
+    font-size: 1.1rem;
   }
-
-  .home-logo {
-    font-size: 2rem;
-  }
-
-  .home-signin-btn svg {
-    width: 32px;
-    height: 32px;
+  
+  .home-overlay-text {
+    padding: 1rem 1.2rem;
+    max-width: 85%;
   }
 }
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .home-mobile-menu-toggle {
+    display: block;
+  }
+  
+  .home-navbar {
+    padding: 1rem;
+    height: 70px;
+  }
+  
+  .home-logo {
+    font-size: 1.5rem;
+  }
+  
+  .home-nav-links {
+    position: fixed;
+    top: 70px;
+    right: -100%;
+    width: 280px;
+    height: calc(100vh - 70px);
+    background: #a30027;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 2rem 0;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .home-nav-links.mobile-open {
+    right: 0;
+  }
+  
+  .home-nav-links li {
+    margin: 0.8rem 0;
+    width: 80%;
+  }
+  
+  .home-nav-links li a {
+    font-size: 1.3rem;
+    padding: 1rem;
+    text-align: center;
+    width: 100%;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+  
+  .home-nav-links li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .home-signin-btn {
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-weight: bold;
+  }
+  
+  .home-overlay-text {
+    padding: 1.5rem;
+    max-width: 90%;
+    border-radius: 15px;
+  }
+  
+  .home-overlay-text h1 {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .home-overlay-text p {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    margin-bottom: 1.5rem;
+  }
+  
+  .home-get-started-btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 25px;
+  }
+  
+  .home-mobile-overlay.active {
+    display: block;
+  }
+}
+
+/* Small mobile breakpoint */
+@media (max-width: 480px) {
+  .home-navbar {
+    padding: 0.8rem;
+    height: 60px;
+  }
+  
+  .home-logo {
+    font-size: 1.3rem;
+  }
+  
+  .home-nav-links {
+    top: 60px;
+    height: calc(100vh - 60px);
+    width: 100%;
+    right: -100%;
+  }
+  
+  .home-nav-links li a {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+  }
+  
+  .home-overlay-text {
+    padding: 1rem;
+    max-width: 95%;
+    bottom: 15%;
+  }
+  
+  .home-overlay-text h1 {
+    font-size: clamp(1.2rem, 6vw, 1.8rem);
+    margin-bottom: 0.8rem;
+  }
+  
+  .home-overlay-text p {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+    margin-bottom: 1.2rem;
+  }
+  
+  .home-get-started-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Very small mobile breakpoint */
+@media (max-width: 320px) {
+  .home-navbar {
+    padding: 0.5rem;
+  }
+  
+  .home-logo {
+    font-size: 1.1rem;
+  }
+  
+  .home-overlay-text {
+    padding: 0.8rem;
+    bottom: 10%;
+  }
+  
+  .home-overlay-text h1 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .home-overlay-text p {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  
+  .home-get-started-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* OLD MEDIA QUERY - REPLACED ABOVE */

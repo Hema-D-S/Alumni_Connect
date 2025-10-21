@@ -1,17 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 import { Link } from "react-router-dom";
+import { FaBars, FaTimes } from "react-icons/fa";
 
 function Home() {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="home-wrapper">
       {/* Navbar */}
       <nav className="home-navbar">
         <div className="home-logo">Alumni Connect</div>
-        <ul className="home-nav-links">
+        
+        {/* Mobile Menu Toggle */}
+        <button 
+          className="home-mobile-menu-toggle"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+
+        <ul className={`home-nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <li>
             <Link to="/auth">Home</Link>
           </li>
@@ -45,6 +57,12 @@ function Home() {
             </Link>
           </li>
         </ul>
+
+        {/* Mobile Overlay */}
+        <div 
+          className={`home-mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
       </nav>
 
       {/* Background */}
