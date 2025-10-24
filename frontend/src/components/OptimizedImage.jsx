@@ -56,6 +56,15 @@ const OptimizedImage = ({
     console.error(`Full image URL: ${imageSrc || src}`);
     console.error(`Image type: ${type}`);
     
+    // Test if the base URL is accessible
+    fetch(getBaseUrl())
+      .then(response => {
+        console.log(`🌐 Base URL test result: ${response.status} ${response.statusText}`);
+      })
+      .catch(error => {
+        console.error(`🌐 Base URL not accessible:`, error);
+      });
+    
     if (!hasError) {
       setHasError(true);
       // Only use fallback for profile images, not post images

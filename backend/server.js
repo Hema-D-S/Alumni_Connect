@@ -198,6 +198,28 @@ app.get("/api/health", (req, res) => {
 // Test route
 app.get("/", (req, res) => res.send("API running..."));
 
+// Test uploads directory
+app.get("/test-uploads", (req, res) => {
+  const fs = require('fs');
+  const uploadPath = path.join(__dirname, "uploads");
+  
+  try {
+    const files = fs.readdirSync(uploadPath);
+    res.json({
+      message: "Uploads directory accessible",
+      uploadPath: uploadPath,
+      filesCount: files.length,
+      sampleFiles: files.slice(0, 5)
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "Cannot access uploads directory",
+      uploadPath: uploadPath,
+      errorMessage: error.message
+    });
+  }
+});
+
 // 404 handler for unmatched routes
 app.use("*", (req, res) => {
   res.status(404).json({

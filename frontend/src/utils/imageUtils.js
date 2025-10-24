@@ -63,15 +63,53 @@ export const getAvatarUrl = (profilePic) => {
  */
 export const testImageAccessibility = async (imageUrl) => {
   try {
+    console.log(`🧪 Testing image accessibility: ${imageUrl}`);
     const response = await fetch(imageUrl, { method: 'HEAD' });
     const isAccessible = response.ok;
-    console.log(`Image accessibility test for ${imageUrl}: ${isAccessible ? '✅ Accessible' : '❌ Not accessible'}`);
+    
+    console.log(`📊 Image test result:`, {
+      url: imageUrl,
+      status: response.status,
+      statusText: response.statusText,
+      accessible: isAccessible,
+      contentType: response.headers.get('content-type'),
+      contentLength: response.headers.get('content-length')
+    });
+    
     if (!isAccessible) {
-      console.error(`Status: ${response.status}, StatusText: ${response.statusText}`);
+      console.error(`❌ Image not accessible - Status: ${response.status}, StatusText: ${response.statusText}`);
+    } else {
+      console.log(`✅ Image accessible: ${imageUrl}`);
     }
+    
     return isAccessible;
   } catch (error) {
-    console.error(`Error testing image accessibility for ${imageUrl}:`, error);
+    console.error(`❌ Error testing image accessibility for ${imageUrl}:`, error);
+    return false;
+  }
+};
+
+/**
+ * Test backend uploads directory accessibility
+ */
+export const testUploadsDirectory = async () => {
+  const BASE_URL = getBaseUrl();
+  const testUrl = `${BASE_URL}/test-uploads`;
+  
+  try {
+    console.log(`🧪 Testing uploads directory: ${testUrl}`);
+    const response = await fetch(testUrl);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`📊 Uploads directory accessible:`, data);
+      return true;
+    } else {
+      console.error(`❌ Uploads directory test failed: ${response.status} ${response.statusText}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`❌ Uploads directory test error:`, error);
     return false;
   }
 };
@@ -79,11 +117,14 @@ export const testImageAccessibility = async (imageUrl) => {
 /**
  * Debug function to test backend image serving
  */
-export const debugImageUrls = () => {
+export const debugImageUrls = async () => {
   const BASE_URL = getBaseUrl();
   console.log('🔍 Image Debug Information:');
   console.log('Base URL:', BASE_URL);
   console.log('Default profile pic URL:', getDefaultProfilePic());
+  
+  // Test uploads directory first
+  await testUploadsDirectory();
   
   // Test a few common image URLs
   const testUrls = [
@@ -92,7 +133,7 @@ export const debugImageUrls = () => {
     `${BASE_URL}/uploads/test.jpg`
   ];
   
-  testUrls.forEach(url => {
-    testImageAccessibility(url);
-  });
+  for (const url of testUrls) {
+    await testImageAccessibility(url);
+  }
 };
