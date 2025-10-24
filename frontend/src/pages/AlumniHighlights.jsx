@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
 import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
@@ -400,10 +401,11 @@ const AlumniHighlights = () => {
                           </a>
                         </div>
                       ) : (
-                        <img
+                        <OptimizedImage
                           src={`${BASE_URL}/${post.file}`}
                           alt="Post content"
-                          className="dashboard-post-image"
+                          type="post"
+                          lazy={true}
                         />
                       ))}
                   </div>

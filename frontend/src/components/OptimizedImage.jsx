@@ -8,6 +8,7 @@ const OptimizedImage = ({
   className = "",
   fallbackSrc = null,
   lazy = true,
+  type = "default", // "profile", "post", "default"
   ...props
 }) => {
   const [imageSrc, setImageSrc] = useState(lazy ? null : src);
@@ -16,6 +17,17 @@ const OptimizedImage = ({
   const imgRef = useRef();
 
   const finalFallbackSrc = fallbackSrc || getDefaultProfilePic();
+
+  // Get appropriate styling classes based on image type
+  const getImageClasses = () => {
+    const baseClasses = "optimized-image";
+    const typeClasses = {
+      profile: "optimized-image-profile",
+      post: "optimized-image-post dashboard-post-image",
+      default: ""
+    };
+    return `${baseClasses} ${typeClasses[type] || ""} ${className}`.trim();
+  };
 
   useEffect(() => {
     if (!lazy) return;
@@ -66,6 +78,8 @@ const OptimizedImage = ({
             justifyContent: "center",
             fontSize: "12px",
             color: "#666",
+            borderRadius: type === "post" ? "12px" : "8px",
+            minHeight: type === "post" ? "200px" : "40px",
           }}
         >
           Loading...
@@ -76,6 +90,7 @@ const OptimizedImage = ({
           alt={alt}
           onError={handleError}
           onLoad={handleLoad}
+          className={getImageClasses()}
           style={{
             transition: "opacity 0.3s ease",
             opacity: isLoading ? 0.5 : 1,

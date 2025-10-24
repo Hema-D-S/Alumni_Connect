@@ -308,13 +308,93 @@
 .dashboard-post-text {
   margin: 10px 0;
 }
-.dashboard-post-image {
-  width: 100%; /* fills the post container width */
-  max-height: 500px; /* adjust as needed for screen */
-  aspect-ratio: 1 / 1; /* forces square ratio */
-  object-fit: cover; /* crops excess but fills the square */
+
+/* Optimized Image Component Styles */
+.optimized-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.optimized-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.optimized-image-post {
+  width: 100%;
+  max-height: 400px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.optimized-image-post:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.optimized-image-profile {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 12px;
   border-radius: 8px;
-  margin-bottom: 10px;
+}
+
+.dashboard-post-image {
+  width: 100%;
+  max-height: 400px; /* Reduced from 500px for better mobile experience */
+  aspect-ratio: 4 / 5; /* Instagram-like ratio (slightly taller than square) */
+  object-fit: cover; /* Crops excess but maintains aspect ratio */
+  border-radius: 12px; /* More modern rounded corners */
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.dashboard-post-image:hover {
+  transform: scale(1.02); /* Slight zoom on hover */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive sizing for different screen sizes */
+@media (max-width: 768px) {
+  .dashboard-post-image,
+  .optimized-image-post {
+    max-height: 350px;
+    aspect-ratio: 1 / 1; /* Square on mobile for consistency */
+    border-radius: 8px;
+  }
+  
+  .optimized-image-post:hover {
+    transform: scale(1.01); /* Less zoom on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-post-image,
+  .optimized-image-post {
+    max-height: 300px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+  }
+  
+  .optimized-image-post:hover {
+    transform: none; /* No hover effects on very small screens */
+  }
 }
 
 .dashboard-post-footer {

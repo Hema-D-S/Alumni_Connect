@@ -456,7 +456,8 @@ const Dashboard = () => {
                   <OptimizedImage
                     src={`${BASE_URL}/${post.file}`}
                     alt="Post attachment"
-                    className="dashboard-post-image"
+                    type="post"
+                    lazy={true}
                     fallbackSrc={null}
                   />
                 )
