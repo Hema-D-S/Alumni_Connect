@@ -11,7 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
-import { getProfilePicUrl, debugImageUrls } from "../utils/imageUtils";
+import { getProfilePicUrl, debugImageUrls, getPostFileUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
@@ -646,10 +646,12 @@ const Dashboard = () => {
                 <p className="dashboard-post-text">{post.text}</p>
               )}
 
-              {post.file &&
-                (post.file.endsWith(".pdf") ? (
+              {post.file && (() => {
+                const imageUrl = getPostFileUrl(post.file);
+                
+                return post.file.endsWith(".pdf") ? (
                   <a
-                    href={`${BASE_URL}/${post.file}`}
+                    href={imageUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="dashboard-post-file"
@@ -658,13 +660,14 @@ const Dashboard = () => {
                   </a>
                 ) : (
                   <OptimizedImage
-                    src={`${BASE_URL}/${post.file}`}
+                    src={imageUrl}
                     alt="Post attachment"
                     type="post"
                     lazy={true}
                     fallbackSrc={null}
                   />
-                ))}
+                );
+              })()}
               <div className="dashboard-post-footer">
                 <button
                   className={`dashboard-footer-btn ${

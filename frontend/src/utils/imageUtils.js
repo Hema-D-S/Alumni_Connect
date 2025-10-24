@@ -11,6 +11,33 @@ export const getDefaultProfilePic = () => {
 };
 
 /**
+ * Get post file URL with proper path handling and existence check
+ * @param {string} filePath - Post file path from database
+ * @returns {string} - Complete file URL
+ */
+export const getPostFileUrl = (filePath) => {
+  if (!filePath) return null;
+  if (filePath.startsWith("http")) return filePath; // Already a full URL
+  
+  const BASE_URL = getBaseUrl();
+  
+  // Handle different path formats
+  let finalUrl;
+  if (filePath.startsWith("/uploads/")) {
+    // Path starts with /uploads/ - use as is
+    finalUrl = `${BASE_URL}${filePath}`;
+  } else if (filePath.startsWith("uploads/")) {
+    // Path starts with uploads/ - add leading slash
+    finalUrl = `${BASE_URL}/${filePath}`;
+  } else {
+    // Path has no uploads prefix - add full prefix
+    finalUrl = `${BASE_URL}/uploads/${filePath}`;
+  }
+  
+  return finalUrl;
+};
+
+/**
  * Get profile picture URL with fallback to default
  * @param {string} profilePic - User's profile picture path/URL
  * @returns {string} - Complete image URL

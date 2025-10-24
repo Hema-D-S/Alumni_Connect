@@ -13,7 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
 import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
-import { getProfilePicUrl } from "../utils/imageUtils";
+import { getProfilePicUrl, getPostFileUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const AlumniHighlights = () => {
@@ -387,7 +387,7 @@ const AlumniHighlights = () => {
                       (post.file.toLowerCase().endsWith(".pdf") ? (
                         <div className="post-file-container">
                           <a
-                            href={`${BASE_URL}/${post.file}`}
+                            href={getPostFileUrl(post.file)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="post-pdf-link"
@@ -402,7 +402,7 @@ const AlumniHighlights = () => {
                         </div>
                       ) : (
                         <OptimizedImage
-                          src={`${BASE_URL}/${post.file}`}
+                          src={getPostFileUrl(post.file)}
                           alt="Post content"
                           type="post"
                           lazy={true}

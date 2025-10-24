@@ -110,6 +110,7 @@ const OptimizedImage = ({
             backgroundColor: "#f8f9fa",
             border: "2px dashed #dee2e6",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "14px",
@@ -120,9 +121,11 @@ const OptimizedImage = ({
             textAlign: "center",
           }}
         >
-          {type === "post"
-            ? "📷 Image could not be loaded"
-            : "❌ Image not found"}
+          <div style={{ fontSize: "24px", marginBottom: "8px" }}>📷</div>
+          <div>Image temporarily unavailable</div>
+          <div style={{ fontSize: "12px", color: "#999", marginTop: "4px" }}>
+            File may have been moved or deleted
+          </div>
         </div>
       ) : imageSrc ? (
         <img
