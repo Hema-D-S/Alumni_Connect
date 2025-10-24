@@ -4,6 +4,7 @@ import { FaGoogle, FaLinkedin, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getApiUrl, getBaseUrl } from "../config/environment";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -25,19 +26,21 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
-  // Dynamic API URL for both development and production
-  const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  // Use centralized environment configuration
+  const API = getApiUrl();
+  const BASE_URL = getBaseUrl();
 
   // Debug environment on component load
   React.useEffect(() => {
     console.log("Auth component loaded with environment:");
     console.log("API URL:", API);
+    console.log("BASE URL:", BASE_URL);
     console.log("Environment variables:", {
       VITE_USE_PRODUCTION: import.meta.env.VITE_USE_PRODUCTION,
       MODE: import.meta.env.MODE,
       VERCEL: import.meta.env.VERCEL,
     });
-  }, [API]);
+  }, [API, BASE_URL]);
 
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({
@@ -165,7 +168,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 1000,
+          timeout: 30000, // 30 seconds for Render cold starts
         });
       } else {
         // Signin request
@@ -180,7 +183,7 @@ const Auth = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            timeout: 1000,
+            timeout: 30000, // 30 seconds for Render cold starts
           }
         );
       }
@@ -256,7 +259,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 1000,
+          timeout: 30000, // 30 seconds for Render cold starts
         }
       );
 
