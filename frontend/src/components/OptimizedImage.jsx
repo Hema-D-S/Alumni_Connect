@@ -24,7 +24,7 @@ const OptimizedImage = ({
     const typeClasses = {
       profile: "optimized-image-profile",
       post: "optimized-image-post dashboard-post-image",
-      default: ""
+      default: "",
     };
     return `${baseClasses} ${typeClasses[type] || ""} ${className}`.trim();
   };
@@ -55,16 +55,18 @@ const OptimizedImage = ({
     console.error(`Base URL: ${getBaseUrl()}`);
     console.error(`Full image URL: ${imageSrc || src}`);
     console.error(`Image type: ${type}`);
-    
+
     // Test if the base URL is accessible
     fetch(getBaseUrl())
-      .then(response => {
-        console.log(`🌐 Base URL test result: ${response.status} ${response.statusText}`);
+      .then((response) => {
+        console.log(
+          `🌐 Base URL test result: ${response.status} ${response.statusText}`
+        );
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(`🌐 Base URL not accessible:`, error);
       });
-    
+
     if (!hasError) {
       setHasError(true);
       // Only use fallback for profile images, not post images
@@ -118,7 +120,9 @@ const OptimizedImage = ({
             textAlign: "center",
           }}
         >
-          {type === "post" ? "📷 Image could not be loaded" : "❌ Image not found"}
+          {type === "post"
+            ? "📷 Image could not be loaded"
+            : "❌ Image not found"}
         </div>
       ) : imageSrc ? (
         <img

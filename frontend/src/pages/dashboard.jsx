@@ -105,11 +105,11 @@ const Dashboard = () => {
   // Test image accessibility
   const testImageUrl = useCallback(async (imageUrl) => {
     try {
-      const response = await fetch(imageUrl, { method: 'HEAD' });
+      const response = await fetch(imageUrl, { method: "HEAD" });
       console.log(`🔍 Image test for ${imageUrl}:`, {
         status: response.status,
         statusText: response.statusText,
-        accessible: response.ok
+        accessible: response.ok,
       });
       return response.ok;
     } catch (error) {
@@ -138,9 +138,9 @@ const Dashboard = () => {
         setPosts(data.posts || []);
         console.log("Dashboard - Posts loaded:", data.posts?.length || 0);
         console.log("Dashboard - Posts sample:", data.posts?.slice(0, 2));
-        
+
         // Debug image URLs for posts with files
-        const postsWithImages = (data.posts || []).filter(post => post.file);
+        const postsWithImages = (data.posts || []).filter((post) => post.file);
         if (postsWithImages.length > 0) {
           console.log("🖼️ Posts with images:", postsWithImages.length);
           postsWithImages.forEach(async (post, index) => {
@@ -149,12 +149,15 @@ const Dashboard = () => {
               postId: post._id,
               fileName: post.file,
               fullUrl: imageUrl,
-              baseUrl: BASE_URL
+              baseUrl: BASE_URL,
             });
-            
+
             // Test if image is accessible
             const isAccessible = await testImageUrl(imageUrl);
-            console.log(`${isAccessible ? '✅' : '❌'} Image ${index + 1} accessibility:`, isAccessible);
+            console.log(
+              `${isAccessible ? "✅" : "❌"} Image ${index + 1} accessibility:`,
+              isAccessible
+            );
           });
         }
       } else {
@@ -170,7 +173,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (token) fetchPosts();
-    
+
     // Debug image URLs on component load
     debugImageUrls();
   }, [token, fetchPosts]);
@@ -186,7 +189,7 @@ const Dashboard = () => {
       console.log("📤 Uploading file:", {
         fileName: postFile.name,
         fileSize: postFile.size,
-        fileType: postFile.type
+        fileType: postFile.type,
       });
     }
 
@@ -199,13 +202,13 @@ const Dashboard = () => {
       });
       const data = await res.json();
       console.log("📝 Post creation response:", data);
-      
+
       if (res.ok) {
         if (data.post.file) {
           console.log("🖼️ Post created with file:", {
             postId: data.post._id,
             filePath: data.post.file,
-            fullUrl: `${BASE_URL}/${data.post.file}`
+            fullUrl: `${BASE_URL}/${data.post.file}`,
           });
         }
         setPosts([data.post, ...(posts || [])]);
@@ -614,7 +617,7 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Post text with edit capability */}
               {editingPost === post._id ? (
                 <div className="post-edit-container">
@@ -642,9 +645,9 @@ const Dashboard = () => {
               ) : (
                 <p className="dashboard-post-text">{post.text}</p>
               )}
-              
-              {post.file && (
-                post.file.endsWith(".pdf") ? (
+
+              {post.file &&
+                (post.file.endsWith(".pdf") ? (
                   <a
                     href={`${BASE_URL}/${post.file}`}
                     target="_blank"
@@ -661,8 +664,7 @@ const Dashboard = () => {
                     lazy={true}
                     fallbackSrc={null}
                   />
-                )
-              )}
+                ))}
               <div className="dashboard-post-footer">
                 <button
                   className={`dashboard-footer-btn ${

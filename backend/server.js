@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const Message = require("./models/Message");
@@ -186,12 +187,32 @@ app.get("/api", (req, res) => {
 
 // API Health check with detailed status
 app.get("/api/health", (req, res) => {
+  const uploadsPath = path.join(__dirname, "uploads");
+  let uploadsInfo = {};
+  
+  try {
+    const uploadsExists = fs.existsSync(uploadsPath);
+    uploadsInfo = {
+      exists: uploadsExists,
+      path: uploadsPath,
+    };
+    
+    if (uploadsExists) {
+      const files = fs.readdirSync(uploadsPath);
+      uploadsInfo.fileCount = files.length;
+      uploadsInfo.sampleFiles = files.slice(0, 5); // First 5 files
+    }
+  } catch (error) {
+    uploadsInfo.error = error.message;
+  }
+
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
     environment: process.env.NODE_ENV || "development",
+    uploads: uploadsInfo,
   });
 });
 
@@ -200,24 +221,39 @@ app.get("/", (req, res) => res.send("API running..."));
 
 // Test uploads directory
 app.get("/test-uploads", (req, res) => {
-  const fs = require('fs');
+  const fs = require("fs");
   const uploadPath = path.join(__dirname, "uploads");
-  
+
   try {
     const files = fs.readdirSync(uploadPath);
     res.json({
       message: "Uploads directory accessible",
       uploadPath: uploadPath,
       filesCount: files.length,
-      sampleFiles: files.slice(0, 5)
+      sampleFiles: files.slice(0, 5),
     });
   } catch (error) {
     res.status(500).json({
       error: "Cannot access uploads directory",
       uploadPath: uploadPath,
-      errorMessage: error.message
+      errorMessage: error.message,
     });
   }
+});
+
+// Check specific file existence
+app.get("/api/check-file/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+  
+  const exists = fs.existsSync(filePath);
+  
+  res.json({
+    filename: filename,
+    exists: exists,
+    fullPath: filePath,
+    url: `${req.protocol}://${req.get('host')}/uploads/${filename}`
+  });
 });
 
 // 404 handler for unmatched routes

@@ -504,7 +504,7 @@
     aspect-ratio: 1 / 1; /* Square on mobile for consistency */
     border-radius: 8px;
   }
-  
+
   .optimized-image-post:hover {
     transform: scale(1.01); /* Less zoom on mobile */
   }
@@ -517,7 +517,7 @@
     margin-bottom: 10px;
     border-radius: 6px;
   }
-  
+
   .optimized-image-post:hover {
     transform: none; /* No hover effects on very small screens */
   }
