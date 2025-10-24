@@ -100,7 +100,20 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 // ---------------- Middleware ----------------
-app.use(express.json());
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`📝 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`✅ ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+  });
+  
+  next();
+});
+
+app.use(express.json({ limit: '10mb' })); // Increase payload limit for file uploads
 
 // Dynamic CORS configuration for development and production
 const corsOptions = {
@@ -123,7 +136,21 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Static file serving with caching and compression
+app.use("/uploads", (req, res, next) => {
+  // Set cache headers for uploaded files
+  res.set({
+    'Cache-Control': 'public, max-age=86400', // 24 hours
+    'ETag': false,
+    'Last-Modified': new Date().toUTCString()
+  });
+  next();
+}, express.static(path.join(__dirname, "uploads"), {
+  maxAge: '1d', // 1 day cache
+  etag: false,
+  lastModified: false
+}));
 
 // ---------------- Routes ----------------
 const authRoutes = require("./routes/authroutes");
@@ -140,8 +167,27 @@ app.use("/api/connections", connectionRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/mentorship", mentorshipRoutes);
 
+// API Health check route
+app.get("/api", (req, res) => {
+  res.json({
+    message: "Alumni Connect API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+    version: "1.0.0"
+  });
+});
+
 // Test route
 app.get("/", (req, res) => res.send("API running..."));
+
+// 404 handler for unmatched routes
+app.use("*", (req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+    path: req.originalUrl,
+    method: req.method
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));

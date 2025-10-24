@@ -20,7 +20,31 @@ export const getProfilePicUrl = (profilePic) => {
   if (profilePic.startsWith("http")) return profilePic;
 
   const BASE_URL = getBaseUrl();
-  return `${BASE_URL}/${profilePic}`;
+  // Add error handling for malformed paths
+  try {
+    if (profilePic.includes('uploads/')) {
+      return `${BASE_URL}/${profilePic}`;
+    } else {
+      return `${BASE_URL}/uploads/${profilePic}`;
+    }
+  } catch (error) {
+    console.warn('Error processing profile pic URL:', error);
+    return getDefaultProfilePic();
+  }
+};
+
+/**
+ * Preload image for better performance
+ * @param {string} src - Image source URL
+ * @returns {Promise<string>} - Promise that resolves when image is loaded
+ */
+export const preloadImage = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(src);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
 };
 
 /**
