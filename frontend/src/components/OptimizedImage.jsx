@@ -54,10 +54,17 @@ const OptimizedImage = ({
     console.error(`❌ Failed to load image: ${imageSrc || src}`);
     console.error(`Base URL: ${getBaseUrl()}`);
     console.error(`Full image URL: ${imageSrc || src}`);
+    console.error(`Image type: ${type}`);
     
     if (!hasError) {
       setHasError(true);
-      setImageSrc(finalFallbackSrc);
+      // Only use fallback for profile images, not post images
+      if (type === "profile") {
+        setImageSrc(finalFallbackSrc);
+      } else {
+        // For post images, don't show fallback - just hide the image
+        setImageSrc(null);
+      }
     }
   };
 
@@ -84,7 +91,27 @@ const OptimizedImage = ({
         >
           Loading...
         </div>
-      ) : (
+      ) : hasError && type !== "profile" ? (
+        // For post images that failed to load, show error message instead of fallback
+        <div
+          className="image-error"
+          style={{
+            backgroundColor: "#f8f9fa",
+            border: "2px dashed #dee2e6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "14px",
+            color: "#6c757d",
+            borderRadius: type === "post" ? "12px" : "8px",
+            minHeight: type === "post" ? "200px" : "40px",
+            padding: "20px",
+            textAlign: "center",
+          }}
+        >
+          {type === "post" ? "📷 Image could not be loaded" : "❌ Image not found"}
+        </div>
+      ) : imageSrc ? (
         <img
           src={imageSrc}
           alt={alt}
@@ -97,7 +124,7 @@ const OptimizedImage = ({
           }}
           {...props}
         />
-      )}
+      ) : null}
     </div>
   );
 };

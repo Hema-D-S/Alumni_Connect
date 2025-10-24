@@ -102,6 +102,22 @@ const Dashboard = () => {
     if (token && user) fetchChatUsers();
   }, [token, user, API_URL]);
 
+  // Test image accessibility
+  const testImageUrl = useCallback(async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl, { method: 'HEAD' });
+      console.log(`🔍 Image test for ${imageUrl}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        accessible: response.ok
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(`❌ Image test failed for ${imageUrl}:`, error.message);
+      return false;
+    }
+  }, []);
+
   // Fetch posts with pagination for better performance
   const fetchPosts = useCallback(async () => {
     try {
@@ -122,6 +138,25 @@ const Dashboard = () => {
         setPosts(data.posts || []);
         console.log("Dashboard - Posts loaded:", data.posts?.length || 0);
         console.log("Dashboard - Posts sample:", data.posts?.slice(0, 2));
+        
+        // Debug image URLs for posts with files
+        const postsWithImages = (data.posts || []).filter(post => post.file);
+        if (postsWithImages.length > 0) {
+          console.log("🖼️ Posts with images:", postsWithImages.length);
+          postsWithImages.forEach(async (post, index) => {
+            const imageUrl = `${BASE_URL}/${post.file}`;
+            console.log(`📸 Post ${index + 1} image:`, {
+              postId: post._id,
+              fileName: post.file,
+              fullUrl: imageUrl,
+              baseUrl: BASE_URL
+            });
+            
+            // Test if image is accessible
+            const isAccessible = await testImageUrl(imageUrl);
+            console.log(`${isAccessible ? '✅' : '❌'} Image ${index + 1} accessibility:`, isAccessible);
+          });
+        }
       } else {
         console.error(
           "Dashboard - Posts fetch failed:",
@@ -131,7 +166,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Dashboard - Error fetching posts:", err);
     }
-  }, [token, API_URL]);
+  }, [token, API_URL, BASE_URL, testImageUrl]);
 
   useEffect(() => {
     if (token) fetchPosts();
@@ -146,17 +181,34 @@ const Dashboard = () => {
     const formData = new FormData();
     formData.append("text", newPostText);
     formData.append("category", "dashboard");
-    if (postFile) formData.append("file", postFile);
+    if (postFile) {
+      formData.append("file", postFile);
+      console.log("📤 Uploading file:", {
+        fileName: postFile.name,
+        fileSize: postFile.size,
+        fileType: postFile.type
+      });
+    }
 
     try {
+      console.log("🚀 Creating post...");
       const res = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await res.json();
+      console.log("📝 Post creation response:", data);
+      
       if (res.ok) {
-        setPosts([data.post, ...posts]);
+        if (data.post.file) {
+          console.log("🖼️ Post created with file:", {
+            postId: data.post._id,
+            filePath: data.post.file,
+            fullUrl: `${BASE_URL}/${data.post.file}`
+          });
+        }
+        setPosts([data.post, ...(posts || [])]);
         setNewPostText("");
         setPostFile(null);
       }
