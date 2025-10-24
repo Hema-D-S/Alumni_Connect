@@ -224,15 +224,22 @@ const Auth = () => {
       } else if (err.response?.status === 400) {
         errorMessage = "Invalid email or password";
       } else if (err.response?.status === 404) {
-        errorMessage = "Server endpoint not found. The server may be starting up. Please wait a moment and try again.";
+        errorMessage =
+          "Server endpoint not found. The server may be starting up. Please wait a moment and try again.";
       } else if (err.response?.status === 500) {
         errorMessage = "Server error. Please try again later.";
-      } else if (err.code === 'ECONNABORTED') {
-        errorMessage = "Request timeout. The server is taking too long to respond. Please try again.";
-      } else if (err.message === "Network Error" || err.code === 'ERR_NETWORK') {
-        errorMessage = "Cannot connect to server. Please check your internet connection or try again later.";
-      } else if (err.message.includes('timeout')) {
-        errorMessage = "Connection timeout. The server may be slow. Please try again.";
+      } else if (err.code === "ECONNABORTED") {
+        errorMessage =
+          "Request timeout. The server is taking too long to respond. Please try again.";
+      } else if (
+        err.message === "Network Error" ||
+        err.code === "ERR_NETWORK"
+      ) {
+        errorMessage =
+          "Cannot connect to server. Please check your internet connection or try again later.";
+      } else if (err.message.includes("timeout")) {
+        errorMessage =
+          "Connection timeout. The server may be slow. Please try again.";
       }
 
       alert(errorMessage);

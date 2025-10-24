@@ -22,13 +22,13 @@ export const getProfilePicUrl = (profilePic) => {
   const BASE_URL = getBaseUrl();
   // Add error handling for malformed paths
   try {
-    if (profilePic.includes('uploads/')) {
+    if (profilePic.includes("uploads/")) {
       return `${BASE_URL}/${profilePic}`;
     } else {
       return `${BASE_URL}/uploads/${profilePic}`;
     }
   } catch (error) {
-    console.warn('Error processing profile pic URL:', error);
+    console.warn("Error processing profile pic URL:", error);
     return getDefaultProfilePic();
   }
 };
@@ -54,4 +54,45 @@ export const preloadImage = (src) => {
  */
 export const getAvatarUrl = (profilePic) => {
   return getProfilePicUrl(profilePic);
+};
+
+/**
+ * Test if an image URL is accessible
+ * @param {string} imageUrl - The image URL to test
+ * @returns {Promise<boolean>} - Promise that resolves to true if accessible
+ */
+export const testImageAccessibility = async (imageUrl) => {
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    const isAccessible = response.ok;
+    console.log(`Image accessibility test for ${imageUrl}: ${isAccessible ? '✅ Accessible' : '❌ Not accessible'}`);
+    if (!isAccessible) {
+      console.error(`Status: ${response.status}, StatusText: ${response.statusText}`);
+    }
+    return isAccessible;
+  } catch (error) {
+    console.error(`Error testing image accessibility for ${imageUrl}:`, error);
+    return false;
+  }
+};
+
+/**
+ * Debug function to test backend image serving
+ */
+export const debugImageUrls = () => {
+  const BASE_URL = getBaseUrl();
+  console.log('🔍 Image Debug Information:');
+  console.log('Base URL:', BASE_URL);
+  console.log('Default profile pic URL:', getDefaultProfilePic());
+  
+  // Test a few common image URLs
+  const testUrls = [
+    `${BASE_URL}/uploads/1756143513016.png`,
+    `${BASE_URL}/api/test`,
+    `${BASE_URL}/uploads/test.jpg`
+  ];
+  
+  testUrls.forEach(url => {
+    testImageAccessibility(url);
+  });
 };

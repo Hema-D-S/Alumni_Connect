@@ -104,16 +104,18 @@ app.set("io", io);
 app.use((req, res, next) => {
   const start = Date.now();
   console.log(`📝 ${req.method} ${req.path} - ${new Date().toISOString()}`);
-  
-  res.on('finish', () => {
+
+  res.on("finish", () => {
     const duration = Date.now() - start;
-    console.log(`✅ ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+    console.log(
+      `✅ ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`
+    );
   });
-  
+
   next();
 });
 
-app.use(express.json({ limit: '10mb' })); // Increase payload limit for file uploads
+app.use(express.json({ limit: "10mb" })); // Increase payload limit for file uploads
 
 // Dynamic CORS configuration for development and production
 const corsOptions = {
@@ -138,19 +140,23 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Static file serving with caching and compression
-app.use("/uploads", (req, res, next) => {
-  // Set cache headers for uploaded files
-  res.set({
-    'Cache-Control': 'public, max-age=86400', // 24 hours
-    'ETag': false,
-    'Last-Modified': new Date().toUTCString()
-  });
-  next();
-}, express.static(path.join(__dirname, "uploads"), {
-  maxAge: '1d', // 1 day cache
-  etag: false,
-  lastModified: false
-}));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    // Set cache headers for uploaded files
+    res.set({
+      "Cache-Control": "public, max-age=86400", // 24 hours
+      ETag: false,
+      "Last-Modified": new Date().toUTCString(),
+    });
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"), {
+    maxAge: "1d", // 1 day cache
+    etag: false,
+    lastModified: false,
+  })
+);
 
 // ---------------- Routes ----------------
 const authRoutes = require("./routes/authroutes");
@@ -174,7 +180,7 @@ app.get("/api", (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
     version: "1.0.0",
-    status: "healthy"
+    status: "healthy",
   });
 });
 
@@ -185,7 +191,7 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     memory: process.memoryUsage(),
-    environment: process.env.NODE_ENV || "development"
+    environment: process.env.NODE_ENV || "development",
   });
 });
 
@@ -197,7 +203,7 @@ app.use("*", (req, res) => {
   res.status(404).json({
     message: "Route not found",
     path: req.originalUrl,
-    method: req.method
+    method: req.method,
   });
 });
 

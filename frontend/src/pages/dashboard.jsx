@@ -9,8 +9,9 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
-import { getProfilePicUrl } from "../utils/imageUtils";
+import { getProfilePicUrl, debugImageUrls } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
@@ -119,6 +120,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (token) fetchPosts();
+    
+    // Debug image URLs on component load
+    debugImageUrls();
   }, [token, fetchPosts]);
 
   // Create post
@@ -438,8 +442,8 @@ const Dashboard = () => {
                 </div>
               </div>
               <p className="dashboard-post-text">{post.text}</p>
-              {post.file &&
-                (post.file.endsWith(".pdf") ? (
+              {post.file && (
+                post.file.endsWith(".pdf") ? (
                   <a
                     href={`${BASE_URL}/${post.file}`}
                     target="_blank"
@@ -449,12 +453,14 @@ const Dashboard = () => {
                     📄 View PDF
                   </a>
                 ) : (
-                  <img
+                  <OptimizedImage
                     src={`${BASE_URL}/${post.file}`}
-                    alt="Post"
+                    alt="Post attachment"
                     className="dashboard-post-image"
+                    fallbackSrc={null}
                   />
-                ))}
+                )
+              )}
               <div className="dashboard-post-footer">
                 <button
                   className={`dashboard-footer-btn ${
