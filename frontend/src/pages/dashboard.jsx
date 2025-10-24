@@ -35,6 +35,9 @@ const Dashboard = () => {
   const [editCommentText, setEditCommentText] = useState("");
   const [newCommentText, setNewCommentText] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedPostMenu, setSelectedPostMenu] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editPostText, setEditPostText] = useState("");
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -47,6 +50,18 @@ const Dashboard = () => {
       navigate("/auth");
     }
   }, [token, navigate]);
+
+  // Close post menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".post-menu-container")) {
+        setSelectedPostMenu(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   // Handle chat click navigation
   const handleChatClick = (userId) => {
@@ -308,6 +323,80 @@ const Dashboard = () => {
     }
   };
 
+  // Delete post
+  const handleDeletePost = async (postId) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        // Remove the post from the posts array
+        setPosts((prevPosts) =>
+          (prevPosts || []).filter((post) => post._id !== postId)
+        );
+        setSelectedPostMenu(null);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.msg || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("Error deleting post");
+    }
+  };
+
+  // Edit post
+  const handleEditPost = async (postId, newText) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newText }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Update the post in the posts array
+        setPosts((prevPosts) =>
+          (prevPosts || []).map((post) =>
+            post._id === postId ? { ...post, text: data.post.text } : post
+          )
+        );
+        setEditingPost(null);
+        setEditPostText("");
+        setSelectedPostMenu(null);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.msg || "Failed to update post");
+      }
+    } catch (err) {
+      console.error("Error updating post:", err);
+      alert("Error updating post");
+    }
+  };
+
+  // Start editing a post
+  const startEditingPost = (post) => {
+    setEditingPost(post._id);
+    setEditPostText(post.text);
+    setSelectedPostMenu(null);
+  };
+
+  // Cancel editing
+  const cancelEditingPost = () => {
+    setEditingPost(null);
+    setEditPostText("");
+  };
+
   // Update Profile
   const handleUpdateProfile = async () => {
     const formData = new FormData();
@@ -436,12 +525,72 @@ const Dashboard = () => {
                   src={getProfilePicUrl(post.user?.profilePic)}
                   alt="Profile"
                 />
-                <div>
+                <div className="dashboard-post-author-info">
                   <h3>{post.user?.firstname || "Unknown User"}</h3>
                   <p>{new Date(post.createdAt).toLocaleString()}</p>
                 </div>
+                {/* Post menu for user's own posts */}
+                {user && post.user?._id === user._id && (
+                  <div className="post-menu-container">
+                    <button
+                      className="post-menu-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPostMenu(
+                          selectedPostMenu === post._id ? null : post._id
+                        );
+                      }}
+                    >
+                      <FaEllipsisV />
+                    </button>
+                    {selectedPostMenu === post._id && (
+                      <div className="post-menu-dropdown">
+                        <button
+                          onClick={() => startEditingPost(post)}
+                          className="post-menu-item"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(post._id)}
+                          className="post-menu-item delete"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <p className="dashboard-post-text">{post.text}</p>
+              
+              {/* Post text with edit capability */}
+              {editingPost === post._id ? (
+                <div className="post-edit-container">
+                  <textarea
+                    value={editPostText}
+                    onChange={(e) => setEditPostText(e.target.value)}
+                    className="post-edit-textarea"
+                    rows="3"
+                  />
+                  <div className="post-edit-actions">
+                    <button
+                      onClick={() => handleEditPost(post._id, editPostText)}
+                      className="post-edit-save"
+                    >
+                      💾 Save
+                    </button>
+                    <button
+                      onClick={cancelEditingPost}
+                      className="post-edit-cancel"
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="dashboard-post-text">{post.text}</p>
+              )}
+              
               {post.file && (
                 post.file.endsWith(".pdf") ? (
                   <a
