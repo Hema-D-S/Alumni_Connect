@@ -13,9 +13,9 @@ function Home() {
       {/* Navbar */}
       <nav className="home-navbar">
         <div className="home-logo">Alumni Connect</div>
-        
+
         {/* Mobile Menu Toggle */}
-        <button 
+        <button
           className="home-mobile-menu-toggle"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
@@ -23,7 +23,9 @@ function Home() {
           {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
         </button>
 
-        <ul className={`home-nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        <ul
+          className={`home-nav-links ${isMobileMenuOpen ? "mobile-open" : ""}`}
+        >
           <li>
             <Link to="/auth">Home</Link>
           </li>
@@ -59,8 +61,8 @@ function Home() {
         </ul>
 
         {/* Mobile Overlay */}
-        <div 
-          className={`home-mobile-overlay ${isMobileMenuOpen ? 'active' : ''}`}
+        <div
+          className={`home-mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
           onClick={() => setIsMobileMenuOpen(false)}
         ></div>
       </nav>

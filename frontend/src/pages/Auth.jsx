@@ -165,7 +165,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000,
+          timeout: 1000,
         });
       } else {
         // Signin request
@@ -180,7 +180,7 @@ const Auth = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            timeout: 10000,
+            timeout: 1000,
           }
         );
       }
@@ -256,7 +256,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000,
+          timeout: 1000,
         }
       );
 
