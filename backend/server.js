@@ -54,6 +54,9 @@ io.on("connection", (socket) => {
     socket.userId = userId;
     if (!global.onlineUsers.has(userId)) global.onlineUsers.set(userId, []);
     global.onlineUsers.get(userId).push(socket.id);
+    
+    // Broadcast online status
+    io.emit("userOnline", { userId });
   });
 
   // Send message
@@ -68,13 +71,26 @@ io.on("connection", (socket) => {
         from: socket.userId,
         to: toUserId,
         text: message,
+        status: "sent",
       });
 
-      // Send message to receiver if online
+      // Populate user data for better frontend display
+      await newMessage.populate("from", "firstname lastname username profilePic");
+      await newMessage.populate("to", "firstname lastname username profilePic");
+
+      // Check if receiver is online
       const receiverSockets = global.onlineUsers.get(toUserId) || [];
-      receiverSockets.forEach((id) => {
-        io.to(id).emit("receiveMessage", newMessage);
-      });
+      
+      if (receiverSockets.length > 0) {
+        // Receiver is online - mark as delivered
+        newMessage.status = "delivered";
+        await newMessage.save();
+        
+        // Send to receiver
+        receiverSockets.forEach((id) => {
+          io.to(id).emit("receiveMessage", newMessage);
+        });
+      }
 
       // Also emit back to sender (for confirmation)
       socket.emit("receiveMessage", newMessage);
@@ -83,12 +99,62 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Typing indicator
+  socket.on("typing", ({ toUserId, isTyping }) => {
+    if (!socket.userId) return;
+    
+    const receiverSockets = global.onlineUsers.get(toUserId) || [];
+    receiverSockets.forEach((id) => {
+      io.to(id).emit("userTyping", {
+        userId: socket.userId,
+        isTyping: isTyping,
+      });
+    });
+  });
+
+  // Mark messages as read
+  socket.on("markAsRead", async ({ messageIds, fromUserId }) => {
+    if (!socket.userId) return;
+    
+    try {
+      // Update message status to read
+      await Message.updateMany(
+        {
+          _id: { $in: messageIds },
+          from: fromUserId,
+          to: socket.userId,
+          status: { $ne: "read" },
+        },
+        {
+          status: "read",
+          readAt: new Date(),
+        }
+      );
+
+      // Notify sender that messages were read
+      const senderSockets = global.onlineUsers.get(fromUserId) || [];
+      senderSockets.forEach((id) => {
+        io.to(id).emit("messagesRead", {
+          userId: socket.userId,
+          messageIds: messageIds,
+        });
+      });
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
+    }
+  });
+
   // Disconnect cleanup
   socket.on("disconnect", () => {
+    const disconnectedUserId = socket.userId;
     for (let [userId, sockets] of global.onlineUsers.entries()) {
       const updatedSockets = sockets.filter((id) => id !== socket.id);
       if (updatedSockets.length === 0) {
         global.onlineUsers.delete(userId);
+        // Broadcast offline status
+        if (userId === disconnectedUserId) {
+          io.emit("userOffline", { userId });
+        }
       } else {
         global.onlineUsers.set(userId, updatedSockets);
       }

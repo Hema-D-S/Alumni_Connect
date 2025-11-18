@@ -11,7 +11,42 @@ const getMessages = async (req, res) => {
         { from: currentUserId, to: otherUserId },
         { from: otherUserId, to: currentUserId },
       ],
-    }).sort({ createdAt: 1 });
+    })
+      .populate("from", "firstname lastname username profilePic")
+      .populate("to", "firstname lastname username profilePic")
+      .sort({ createdAt: 1 });
+
+    // Mark messages as delivered if they were sent to current user
+    const unreadMessages = messages.filter(
+      (msg) =>
+        msg.to._id.toString() === currentUserId &&
+        msg.status !== "read" &&
+        msg.status !== "delivered"
+    );
+
+    if (unreadMessages.length > 0) {
+      const messageIds = unreadMessages.map((msg) => msg._id);
+      await Message.updateMany(
+        {
+          _id: { $in: messageIds },
+          to: currentUserId,
+          status: "sent",
+        },
+        {
+          status: "delivered",
+        }
+      );
+
+      // Update messages in response
+      messages.forEach((msg) => {
+        if (
+          messageIds.some((id) => id.toString() === msg._id.toString()) &&
+          msg.status === "sent"
+        ) {
+          msg.status = "delivered";
+        }
+      });
+    }
 
     res.json(messages);
   } catch (err) {
