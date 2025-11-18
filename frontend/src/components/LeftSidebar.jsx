@@ -7,6 +7,22 @@ import { getProfilePicUrl } from "../utils/imageUtils";
 import ProfileModal from "./ProfileModal";
 import { useUser } from "../hooks/useUser";
 
+// Prefetch pages on hover for faster navigation
+const prefetchPage = (path) => {
+  const routeMap = {
+    "/dashboard": () => import("../pages/dashboard.jsx"),
+    "/find": () => import("../pages/FindUsers.jsx"),
+    "/chat": () => import("../pages/ChatPage.jsx"),
+    "/mentorshipprograms": () => import("../pages/MentorshipPrograms.jsx"),
+    "/alumnihighlights": () => import("../pages/AlumniHighlights.jsx"),
+    "/studentsachievements": () => import("../pages/StudentsAchievements.jsx"),
+  };
+  
+  if (routeMap[path]) {
+    routeMap[path]();
+  }
+};
+
 const LeftSidebar = memo(
   ({ openProfileModal, isMobileOpen, closeMobileMenu }) => {
     // Use global user context
@@ -62,22 +78,46 @@ const LeftSidebar = memo(
         </div>
 
         <nav className="dashboard-menu sidebar-menu">
-          <Link to="/dashboard" onClick={handleMenuClick}>
+          <Link 
+            to="/dashboard" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/dashboard")}
+          >
             Dashboard
           </Link>
-          <Link to="/find" onClick={handleMenuClick}>
+          <Link 
+            to="/find" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/find")}
+          >
             Find
           </Link>
-          <Link to="/chat" onClick={handleMenuClick}>
+          <Link 
+            to="/chat" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/chat")}
+          >
             Chat
           </Link>
-          <Link to="/mentorshipprograms" onClick={handleMenuClick}>
+          <Link 
+            to="/mentorshipprograms" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/mentorshipprograms")}
+          >
             Mentorship Programs
           </Link>
-          <Link to="/alumnihighlights" onClick={handleMenuClick}>
+          <Link 
+            to="/alumnihighlights" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/alumnihighlights")}
+          >
             Alumni Highlights
           </Link>
-          <Link to="/studentsachievements" onClick={handleMenuClick}>
+          <Link 
+            to="/studentsachievements" 
+            onClick={handleMenuClick}
+            onMouseEnter={() => prefetchPage("/studentsachievements")}
+          >
             Students Achievements
           </Link>
         </nav>

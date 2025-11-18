@@ -53,10 +53,21 @@ select {
   box-sizing: border-box;
 }
 
-/* Responsive images */
+/* Responsive images with lazy loading */
 img {
   max-width: 100%;
   height: auto;
+  display: block;
+}
+
+/* Optimize image loading */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
 }
 
 /* Better mobile touch targets */
@@ -68,6 +79,7 @@ img {
   a {
     min-height: 44px;
     min-width: 44px;
+    -webkit-tap-highlight-color: rgba(163, 0, 39, 0.2);
   }
 
   /* Prevent zoom on form inputs on iOS */
@@ -83,6 +95,21 @@ img {
   .content {
     padding-left: 15px;
     padding-right: 15px;
+  }
+
+  /* Improve scrolling performance on mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container,
+  .wrapper,
+  .content {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
 

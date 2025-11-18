@@ -3,10 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "env": {
-    "NODE_ENV": "production",
-    "VITE_USE_PRODUCTION": "true"
-  },
   "rewrites": [
     {
       "source": "/(.*)",

@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { getDefaultProfilePic } from "../utils/imageUtils";
 import { getBaseUrl } from "../config/environment";
 
-const OptimizedImage = ({
+const OptimizedImage = memo(({
   src,
   alt = "Image",
   className = "",
@@ -134,6 +134,8 @@ const OptimizedImage = ({
           onError={handleError}
           onLoad={handleLoad}
           className={getImageClasses()}
+          loading={lazy ? "lazy" : "eager"}
+          decoding="async"
           style={{
             transition: "opacity 0.3s ease",
             opacity: isLoading ? 0.5 : 1,
@@ -143,6 +145,8 @@ const OptimizedImage = ({
       ) : null}
     </div>
   );
-};
+});
+
+OptimizedImage.displayName = "OptimizedImage";
 
 export default OptimizedImage;
