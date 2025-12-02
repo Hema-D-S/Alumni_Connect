@@ -373,7 +373,7 @@ const Dashboard = () => {
             <form onSubmit={handleCreatePost}>
               <input
                 type="text"
-                placeholder="What's on your mind? Share your thoughts, achievements, or updates..."
+                placeholder="What's on your mind? Share your thoughts or updates..."
                 value={newPostText}
                 onChange={(e) => setNewPostText(e.target.value)}
                 required
