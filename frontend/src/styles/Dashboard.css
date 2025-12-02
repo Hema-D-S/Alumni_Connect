@@ -65,8 +65,13 @@
 }
 
 .dashboard-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   margin-bottom: 20px;
+  width: 100%;
 }
 .dashboard-profile img {
   border-radius: 50%; /* keeps it round */
@@ -74,6 +79,8 @@
   height: 80px;
   object-fit: cover; /* fills the square without stretching */
   transition: transform 0.3s ease;
+  display: block;
+  margin: 0 auto;
 }
 .dashboard-profile img:hover {
   transform: scale(1.05);
@@ -85,12 +92,16 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   letter-spacing: 0.5px;
+  text-align: center;
+  width: 100%;
 }
 .dashboard-username {
   font-size: 14px;
   color: #666;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 400;
+  text-align: center;
+  width: 100%;
 }
 
 .dashboard-menu {
@@ -833,6 +844,10 @@
 
 /* Profile Picture Section */
 .profile-pic-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   margin-bottom: 25px;
   padding: 20px;
@@ -841,7 +856,11 @@
 }
 
 .current-profile-pic {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 15px;
+  width: 100%;
 }
 
 .current-profile-pic img {
@@ -851,6 +870,16 @@
   object-fit: cover;
   border: 4px solid #a30027;
   box-shadow: 0 4px 12px rgba(163, 0, 39, 0.2);
+  display: block;
+  margin: 0 auto;
+}
+
+.profile-pic-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .upload-label {
@@ -876,6 +905,7 @@
   margin-top: 8px;
   color: #28a745;
   font-weight: 500;
+  text-align: center;
 }
 
 /* Form Grid */

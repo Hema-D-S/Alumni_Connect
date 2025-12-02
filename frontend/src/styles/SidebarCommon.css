@@ -54,6 +54,8 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
   letter-spacing: 0.5px !important;
   margin: 10px 0 5px !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 .sidebar-common .sidebar-profile-username {
@@ -61,6 +63,8 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
   font-weight: 400 !important;
   opacity: 0.8 !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 /* Mobile Responsive Styles for Sidebar */

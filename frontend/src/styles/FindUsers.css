@@ -118,7 +118,8 @@
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 10px;
+  margin: 0 auto 10px auto;
+  display: block;
 }
 
 /* ---------- CONNECT BUTTON ---------- */
@@ -221,6 +222,8 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
+  margin: 0 auto;
 }
 
 /* ---------- USER PROFILE MODAL ---------- */
@@ -248,6 +251,23 @@
   overflow-y: auto;
   position: relative;
   animation: modalFadeIn 0.4s ease;
+  text-align: center;
+}
+
+.findusers-modal img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+.findusers-modal .user-profile-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #a30027;
+  margin: 20px auto;
+  display: block;
 }
 
 .findusers-close {
@@ -426,6 +446,7 @@
   padding: 12px 0;
   border-bottom: 1px solid #eee;
   gap: 12px;
+  justify-content: flex-start;
 }
 
 .request-item:last-child {
@@ -438,6 +459,8 @@
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #a30027;
+  display: block;
+  margin: 0 auto;
 }
 
 .request-avatar {
