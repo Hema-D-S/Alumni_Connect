@@ -6,10 +6,14 @@ import {
   FaRegComment,
   FaEllipsisV,
   FaGraduationCap,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getProfilePicUrl, getPostFileUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const AlumniHighlights = () => {
@@ -26,6 +30,7 @@ const AlumniHighlights = () => {
   const [newPostText, setNewPostText] = useState("");
   const [postFile, setPostFile] = useState(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -246,7 +251,25 @@ const AlumniHighlights = () => {
 
   return (
     <div className="dashboard-wrapper alumni-highlights-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed alumni-highlights-feed">
@@ -270,11 +293,7 @@ const AlumniHighlights = () => {
             <div className="dashboard-create-post">
               <div className="dashboard-create-post-header">
                 <img
-                  src={
-                    user?.profilePic
-                      ? `${BASE_URL}/${user.profilePic}`
-                      : "https://via.placeholder.com/40"
-                  }
+                  src={getProfilePicUrl(user?.profilePic)}
                   alt="Your profile"
                   className="dashboard-create-post-avatar"
                 />
@@ -346,11 +365,7 @@ const AlumniHighlights = () => {
                 <div key={post._id} className="dashboard-post alumni-post">
                   <div className="dashboard-post-header">
                     <img
-                      src={
-                        post.user?.profilePic
-                          ? `${BASE_URL}/${post.user.profilePic}`
-                          : "https://via.placeholder.com/40"
-                      }
+                      src={getProfilePicUrl(post.user?.profilePic)}
                       alt="Author"
                       className="dashboard-post-avatar"
                     />
@@ -372,7 +387,7 @@ const AlumniHighlights = () => {
                       (post.file.toLowerCase().endsWith(".pdf") ? (
                         <div className="post-file-container">
                           <a
-                            href={`${BASE_URL}/${post.file}`}
+                            href={getPostFileUrl(post.file)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="post-pdf-link"
@@ -386,10 +401,11 @@ const AlumniHighlights = () => {
                           </a>
                         </div>
                       ) : (
-                        <img
-                          src={`${BASE_URL}/${post.file}`}
+                        <OptimizedImage
+                          src={getPostFileUrl(post.file)}
                           alt="Post content"
-                          className="dashboard-post-image"
+                          type="post"
+                          lazy={true}
                         />
                       ))}
                   </div>
@@ -440,11 +456,7 @@ const AlumniHighlights = () => {
                 {selectedPostComments.map((comment) => (
                   <div key={comment._id} className="dashboard-comment">
                     <img
-                      src={
-                        comment.author?.profilePic
-                          ? `${BASE_URL}/${comment.author.profilePic}`
-                          : "https://via.placeholder.com/30"
-                      }
+                      src={getProfilePicUrl(comment.author?.profilePic)}
                       alt="Commenter"
                       className="dashboard-comment-avatar"
                     />

@@ -1,6 +1,7 @@
 // src/components/ProfileModal.jsx
 import React, { useState, useEffect } from "react";
-import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getApiUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import "../styles/Dashboard.css";
 import axios from "axios";
 
@@ -13,7 +14,6 @@ const ProfileModal = ({ user, isOpen, onClose, onUserUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const API = getApiUrl();
-  const BASE_URL = getBaseUrl();
 
   useEffect(() => {
     if (user && isOpen) {
@@ -76,11 +76,7 @@ const ProfileModal = ({ user, isOpen, onClose, onUserUpdate }) => {
           <div className="profile-pic-section">
             <div className="current-profile-pic">
               <img
-                src={
-                  user?.profilePic
-                    ? `${BASE_URL}/${user.profilePic}`
-                    : "https://via.placeholder.com/120"
-                }
+                src={getProfilePicUrl(user?.profilePic)}
                 alt="Current Profile"
               />
             </div>

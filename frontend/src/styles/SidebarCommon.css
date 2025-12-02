@@ -62,3 +62,48 @@
   font-weight: 400 !important;
   opacity: 0.8 !important;
 }
+
+/* Mobile Responsive Styles for Sidebar */
+@media (max-width: 768px) {
+  .sidebar-common {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .sidebar-common.mobile-open {
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-common .sidebar-menu a,
+  .sidebar-common nav ul li a {
+    padding: 15px 12px !important;
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+
+  .sidebar-common .sidebar-profile-name {
+    font-size: 16px !important;
+  }
+
+  .sidebar-common .sidebar-profile-username {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-common {
+    width: 90% !important;
+  }
+
+  .sidebar-common .sidebar-menu a,
+  .sidebar-common nav ul li a {
+    padding: 16px 15px !important;
+    font-size: 17px !important;
+  }
+}

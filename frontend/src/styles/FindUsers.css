@@ -641,3 +641,70 @@
     width: 100%;
   }
 }
+
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .findusers-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+
+  .findusers-wrapper {
+    padding-top: 60px; /* Space for mobile menu */
+  }
+
+  .findusers-main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .findusers-topbar {
+    padding: 10px 60px 10px 20px; /* Space for menu button */
+    flex-wrap: wrap;
+  }
+
+  .findusers-search-container input {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+@media (max-width: 480px) {
+  .findusers-wrapper {
+    padding-top: 55px;
+  }
+
+  .findusers-topbar {
+    padding: 10px 50px 15px 15px;
+  }
+
+  .findusers-app-title {
+    font-size: 18px;
+  }
+
+  .findusers-search-container input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

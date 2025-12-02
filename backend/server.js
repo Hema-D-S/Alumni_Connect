@@ -14,16 +14,22 @@ const app = express();
 const server = http.createServer(app);
 
 // ---------------- Socket.IO Setup ----------------
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [
+        process.env.FRONTEND_URL,
+        /\.vercel\.app$/, // Allow all Vercel preview deployments
+        /\.onrender\.com$/, // Allow Render deployments
+      ].filter(Boolean)
+    : [
+        "http://localhost:5173", // Vite default
+        "http://localhost:3000", // React default
+        "http://localhost:5000", // Alternative local
+      ];
+
 const io = new Server(server, {
   cors: {
-    origin: [
-      "https://alumni-connect-oe7z.vercel.app", // Production
-      "https://alumni-connect-jd5g.vercel.app", // Your new Vercel URL
-      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "http://localhost:5173", // Local development
-      "http://localhost:3000", // Alternative local port
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -48,6 +54,9 @@ io.on("connection", (socket) => {
     socket.userId = userId;
     if (!global.onlineUsers.has(userId)) global.onlineUsers.set(userId, []);
     global.onlineUsers.get(userId).push(socket.id);
+    
+    // Broadcast online status
+    io.emit("userOnline", { userId });
   });
 
   // Send message
@@ -62,13 +71,26 @@ io.on("connection", (socket) => {
         from: socket.userId,
         to: toUserId,
         text: message,
+        status: "sent",
       });
 
-      // Send message to receiver if online
+      // Populate user data for better frontend display
+      await newMessage.populate("from", "firstname lastname username profilePic");
+      await newMessage.populate("to", "firstname lastname username profilePic");
+
+      // Check if receiver is online
       const receiverSockets = global.onlineUsers.get(toUserId) || [];
-      receiverSockets.forEach((id) => {
-        io.to(id).emit("receiveMessage", newMessage);
-      });
+      
+      if (receiverSockets.length > 0) {
+        // Receiver is online - mark as delivered
+        newMessage.status = "delivered";
+        await newMessage.save();
+        
+        // Send to receiver
+        receiverSockets.forEach((id) => {
+          io.to(id).emit("receiveMessage", newMessage);
+        });
+      }
 
       // Also emit back to sender (for confirmation)
       socket.emit("receiveMessage", newMessage);
@@ -77,12 +99,62 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Typing indicator
+  socket.on("typing", ({ toUserId, isTyping }) => {
+    if (!socket.userId) return;
+    
+    const receiverSockets = global.onlineUsers.get(toUserId) || [];
+    receiverSockets.forEach((id) => {
+      io.to(id).emit("userTyping", {
+        userId: socket.userId,
+        isTyping: isTyping,
+      });
+    });
+  });
+
+  // Mark messages as read
+  socket.on("markAsRead", async ({ messageIds, fromUserId }) => {
+    if (!socket.userId) return;
+    
+    try {
+      // Update message status to read
+      await Message.updateMany(
+        {
+          _id: { $in: messageIds },
+          from: fromUserId,
+          to: socket.userId,
+          status: { $ne: "read" },
+        },
+        {
+          status: "read",
+          readAt: new Date(),
+        }
+      );
+
+      // Notify sender that messages were read
+      const senderSockets = global.onlineUsers.get(fromUserId) || [];
+      senderSockets.forEach((id) => {
+        io.to(id).emit("messagesRead", {
+          userId: socket.userId,
+          messageIds: messageIds,
+        });
+      });
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
+    }
+  });
+
   // Disconnect cleanup
   socket.on("disconnect", () => {
+    const disconnectedUserId = socket.userId;
     for (let [userId, sockets] of global.onlineUsers.entries()) {
       const updatedSockets = sockets.filter((id) => id !== socket.id);
       if (updatedSockets.length === 0) {
         global.onlineUsers.delete(userId);
+        // Broadcast offline status
+        if (userId === disconnectedUserId) {
+          io.emit("userOffline", { userId });
+        }
       } else {
         global.onlineUsers.set(userId, updatedSockets);
       }
@@ -94,23 +166,63 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 // ---------------- Middleware ----------------
-app.use(express.json());
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`📝 ${req.method} ${req.path} - ${new Date().toISOString()}`);
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(
+      `✅ ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`
+    );
+  });
+
+  next();
+});
+
+app.use(express.json({ limit: "10mb" })); // Increase payload limit for file uploads
+
+// Dynamic CORS configuration for development and production
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? [
+          process.env.FRONTEND_URL,
+          /\.vercel\.app$/, // Allow all Vercel preview deployments
+          /\.onrender\.com$/, // Allow Render deployments
+        ].filter(Boolean)
+      : [
+          "http://localhost:5173", // Vite default
+          "http://localhost:3000", // React default
+          "http://localhost:5000", // Alternative local
+        ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
+// Static file serving with caching and compression
 app.use(
-  cors({
-    origin: [
-      FRONTEND_URL,
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://alumni-connect-oe7z.vercel.app",
-      "https://alumni-connect-jd5g.vercel.app", // Your current Vercel URL
-      "https://alumni-connect-jd5g-git-main-hemas-projects-0ff36fde.vercel.app", // Preview URL
-      "https://alumni-connect-jd5g-l2gtxq7id-hemas-projects-0ff36fde.vercel.app", // Preview URL
-    ],
-    credentials: true,
+  "/uploads",
+  (req, res, next) => {
+    // Set cache headers for uploaded files
+    res.set({
+      "Cache-Control": "public, max-age=86400", // 24 hours
+      ETag: false,
+      "Last-Modified": new Date().toUTCString(),
+    });
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"), {
+    maxAge: "1d", // 1 day cache
+    etag: false,
+    lastModified: false,
   })
 );
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ---------------- Routes ----------------
 const authRoutes = require("./routes/authroutes");
@@ -119,6 +231,7 @@ const findUsersRoutes = require("./routes/FindUsers");
 const connectionRoutes = require("./routes/connectionRoutes")(io);
 const chatRoutes = require("./routes/chatRoutes");
 const mentorshipRoutes = require("./routes/mentorshipRoutes");
+const fileRoutes = require("./routes/fileRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
@@ -126,9 +239,63 @@ app.use("/api/findusers", findUsersRoutes);
 app.use("/api/connections", connectionRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/mentorship", mentorshipRoutes);
+app.use("/api/files", fileRoutes);
+
+// API Health check route
+app.get("/api", (req, res) => {
+  res.json({
+    message: "Alumni Connect API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+    version: "1.0.0",
+    status: "healthy",
+  });
+});
+
+// API Health check with detailed status
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || "development",
+  });
+});
 
 // Test route
 app.get("/", (req, res) => res.send("API running..."));
+
+// Test uploads directory
+app.get("/test-uploads", (req, res) => {
+  const fs = require("fs");
+  const uploadPath = path.join(__dirname, "uploads");
+
+  try {
+    const files = fs.readdirSync(uploadPath);
+    res.json({
+      message: "Uploads directory accessible",
+      uploadPath: uploadPath,
+      filesCount: files.length,
+      sampleFiles: files.slice(0, 5),
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "Cannot access uploads directory",
+      uploadPath: uploadPath,
+      errorMessage: error.message,
+    });
+  }
+});
+
+// 404 handler for unmatched routes
+app.use("*", (req, res) => {
+  res.status(404).json({
+    message: "Route not found",
+    path: req.originalUrl,
+    method: req.method,
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));

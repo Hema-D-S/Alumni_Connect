@@ -303,6 +303,26 @@
   letter-spacing: 0.5px;
 }
 
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .students-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .students-achievements-header .dashboard-app-title {
@@ -470,4 +490,57 @@
 
 .dashboard-post-stats span:hover {
   color: #1877f2;
+}
+
+/* Mobile Responsive Styles for Students Achievements */
+@media (max-width: 768px) {
+  .students-achievements-wrapper {
+    padding-top: 60px;
+  }
+
+  .students-achievements-header {
+    padding: 15px 60px 15px 20px;
+    flex-wrap: wrap;
+  }
+
+  .students-achievements-header .dashboard-app-title {
+    font-size: 20px;
+  }
+
+  .students-achievements-header input {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+
+  .students-achievements-feed .dashboard-feed-scroll {
+    padding: 15px 10px;
+  }
+
+  .students-achievements-feed .dashboard-post {
+    margin: 10px 0;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .students-achievements-wrapper {
+    padding-top: 55px;
+  }
+
+  .students-achievements-header {
+    padding: 10px 50px 15px 15px;
+  }
+
+  .students-achievements-header .dashboard-app-title {
+    font-size: 18px;
+  }
+
+  .students-icon {
+    font-size: 20px;
+  }
+
+  .students-achievements-feed .dashboard-feed-scroll {
+    padding: 10px 5px;
+  }
 }

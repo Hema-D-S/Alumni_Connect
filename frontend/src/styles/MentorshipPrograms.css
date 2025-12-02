@@ -640,3 +640,104 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
+
+/* Desktop - ensure sidebar is visible */
+@media (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
+  }
+
+  .dashboard-sidebar {
+    position: relative !important;
+    transform: translateX(0) !important;
+  }
+
+  .mentorship-wrapper {
+    padding-top: 0 !important;
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+
+  .mentorship-wrapper {
+    padding-top: 60px; /* Space for mobile menu */
+  }
+
+  .mentorship-main {
+    margin-left: 0;
+    width: 100%;
+  }
+  .mentorship-topbar {
+    padding: 10px 60px 10px 20px; /* Space for menu button */
+    flex-wrap: wrap;
+  }
+
+  .mentorship-search-container {
+    width: 100%;
+    justify-content: stretch;
+    margin-top: 10px;
+  }
+
+  .mentorship-search-container input {
+    width: 100%;
+  }
+
+  .mentorship-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .mentorship-card {
+    padding: 15px;
+  }
+
+  .mentorship-modal .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mentorship-wrapper {
+    padding-top: 55px;
+  }
+
+  .mentorship-topbar {
+    padding: 10px 50px 15px 15px;
+  }
+
+  .mentorship-app-title {
+    font-size: 18px;
+  }
+
+  .mentorship-search-container input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .mentorship-card h3 {
+    font-size: 16px;
+  }
+
+  .mentorship-card p {
+    font-size: 13px;
+  }
+
+  .btn-primary {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}

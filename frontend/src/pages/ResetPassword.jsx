@@ -56,7 +56,7 @@ const ResetPassword = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000,
+          timeout: 30000, // 30 seconds for Render cold starts
         }
       );
 

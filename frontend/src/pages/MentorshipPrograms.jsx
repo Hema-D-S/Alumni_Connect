@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import LeftSidebar from "../components/LeftSidebar";
+import { FaBars, FaTimes } from "react-icons/fa";
 import "../styles/MentorshipPrograms.css";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const MentorshipPrograms = () => {
@@ -14,6 +16,7 @@ const MentorshipPrograms = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [newProgram, setNewProgram] = useState({
     title: "",
     description: "",
@@ -166,13 +169,6 @@ const MentorshipPrograms = () => {
       program.mentor.lastname.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Helper to get profile pic URL
-  const getProfilePicUrl = (pic) => {
-    if (!pic) return "https://via.placeholder.com/40";
-    if (pic.startsWith("http")) return pic;
-    return `${BASE_URL}/${pic}`;
-  };
-
   // Check if user has applied to program
   const hasApplied = (program) => {
     return program.participants.some((p) => p._id === currentUser?._id);
@@ -185,7 +181,25 @@ const MentorshipPrograms = () => {
 
   return (
     <div className="mentorship-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       <main className="mentorship-main">
         <header className="mentorship-topbar">

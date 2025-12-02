@@ -17,9 +17,15 @@ export const CONFIG = {
   },
 
   PRODUCTION: {
-    API_URL: "https://alumni-connect-td6y.onrender.com/api",
-    BASE_URL: "https://alumni-connect-td6y.onrender.com",
-    WS_URL: "https://alumni-connect-td6y.onrender.com",
+    API_URL:
+      import.meta.env.VITE_API_URL ||
+      "https://alumni-connect-td6y.onrender.com/api",
+    BASE_URL:
+      import.meta.env.VITE_BASE_URL ||
+      "https://alumni-connect-td6y.onrender.com",
+    WS_URL:
+      import.meta.env.VITE_BASE_URL ||
+      "https://alumni-connect-td6y.onrender.com",
   },
 };
 

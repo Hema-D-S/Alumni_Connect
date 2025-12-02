@@ -7,10 +7,14 @@ import {
   FaEllipsisV,
   FaTrophy,
   FaCamera,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getProfilePicUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const StudentsAchievements = () => {
@@ -29,6 +33,7 @@ const StudentsAchievements = () => {
   const [isPosting, setIsPosting] = useState(false);
   // Menu state
   const [selectedPostMenu, setSelectedPostMenu] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -310,7 +315,25 @@ const StudentsAchievements = () => {
 
   return (
     <div className="dashboard-wrapper students-achievements-wrapper">
-      <LeftSidebar />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed students-achievements-feed">
@@ -337,11 +360,7 @@ const StudentsAchievements = () => {
               <form onSubmit={handleCreatePost} className="create-post-form">
                 <div className="post-form-header">
                   <img
-                    src={
-                      user.profilePic
-                        ? `${BASE_URL}/${user.profilePic}`
-                        : "https://via.placeholder.com/40"
-                    }
+                    src={getProfilePicUrl(user.profilePic)}
                     alt="Your Profile"
                     className="dashboard-post-avatar"
                   />
@@ -428,7 +447,7 @@ const StudentsAchievements = () => {
               }}
             >
               {!user ? (
-                <p>Loading user information...</p>
+                <p className="loading-text">Loading user information...</p>
               ) : user.role !== "student" ? (
                 <p>
                   Only students can post achievements. Your role: {user.role}
@@ -464,11 +483,7 @@ const StudentsAchievements = () => {
                 <div key={post._id} className="dashboard-post students-post">
                   <div className="dashboard-post-header">
                     <img
-                      src={
-                        post.user?.profilePic
-                          ? `${BASE_URL}/${post.user.profilePic}`
-                          : "https://via.placeholder.com/40"
-                      }
+                      src={getProfilePicUrl(post.user?.profilePic)}
                       alt="Author"
                       className="dashboard-post-avatar"
                     />
@@ -533,10 +548,11 @@ const StudentsAchievements = () => {
                           </a>
                         </div>
                       ) : (
-                        <img
+                        <OptimizedImage
                           src={`${BASE_URL}/${post.file}`}
                           alt="Post content"
-                          className="dashboard-post-image"
+                          type="post"
+                          lazy={true}
                         />
                       ))}
                   </div>
@@ -587,11 +603,7 @@ const StudentsAchievements = () => {
                 {selectedPostComments.map((comment) => (
                   <div key={comment._id} className="dashboard-comment">
                     <img
-                      src={
-                        comment.author?.profilePic
-                          ? `${BASE_URL}/${comment.author.profilePic}`
-                          : "https://via.placeholder.com/30"
-                      }
+                      src={getProfilePicUrl(comment.author?.profilePic)}
                       alt="Commenter"
                       className="dashboard-comment-avatar"
                     />

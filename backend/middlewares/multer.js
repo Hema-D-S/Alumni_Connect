@@ -6,10 +6,10 @@ const storage = multer.diskStorage({
     cb(null, "uploads/"); // store inside /uploads
   },
   filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
+    // Generate timestamp-based filename like: 1761060074683-originalname.jpg
+    const timestamp = Date.now();
+    const originalName = file.originalname.replace(/\s+/g, '-'); // Replace spaces with hyphens
+    cb(null, `${timestamp}-${originalName}`);
   },
 });
 

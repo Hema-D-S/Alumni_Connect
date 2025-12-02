@@ -1,9 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
 import "../styles/Dashboard.css";
-import { FaThumbsUp, FaRegComment, FaEllipsisV } from "react-icons/fa";
+import {
+  FaThumbsUp,
+  FaRegComment,
+  FaEllipsisV,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import LeftSidebar from "../components/LeftSidebar";
+import OptimizedImage from "../components/OptimizedImage";
 import { getApiUrl, getBaseUrl } from "../config/environment";
+import { getProfilePicUrl, debugImageUrls, getPostFileUrl } from "../utils/imageUtils";
 import { useUser } from "../hooks/useUser";
 
 const Dashboard = () => {
@@ -26,6 +34,10 @@ const Dashboard = () => {
   const [editingComment, setEditingComment] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [newCommentText, setNewCommentText] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedPostMenu, setSelectedPostMenu] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editPostText, setEditPostText] = useState("");
 
   const token = localStorage.getItem("token");
   const BASE_URL = getBaseUrl();
@@ -39,12 +51,17 @@ const Dashboard = () => {
     }
   }, [token, navigate]);
 
-  // Helper to get profile pic URL
-  const getProfilePicUrl = (pic) => {
-    if (!pic) return "https://via.placeholder.com/100";
-    if (pic.startsWith("http")) return pic;
-    return `${BASE_URL}/${pic}`;
-  };
+  // Close post menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".post-menu-container")) {
+        setSelectedPostMenu(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   // Handle chat click navigation
   const handleChatClick = (userId) => {
@@ -85,6 +102,22 @@ const Dashboard = () => {
     if (token && user) fetchChatUsers();
   }, [token, user, API_URL]);
 
+  // Test image accessibility
+  const testImageUrl = useCallback(async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl, { method: "HEAD" });
+      console.log(`🔍 Image test for ${imageUrl}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        accessible: response.ok,
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(`❌ Image test failed for ${imageUrl}:`, error.message);
+      return false;
+    }
+  }, []);
+
   // Fetch posts with pagination for better performance
   const fetchPosts = useCallback(async () => {
     try {
@@ -105,6 +138,28 @@ const Dashboard = () => {
         setPosts(data.posts || []);
         console.log("Dashboard - Posts loaded:", data.posts?.length || 0);
         console.log("Dashboard - Posts sample:", data.posts?.slice(0, 2));
+
+        // Debug image URLs for posts with files
+        const postsWithImages = (data.posts || []).filter((post) => post.file);
+        if (postsWithImages.length > 0) {
+          console.log("🖼️ Posts with images:", postsWithImages.length);
+          postsWithImages.forEach(async (post, index) => {
+            const imageUrl = `${BASE_URL}/${post.file}`;
+            console.log(`📸 Post ${index + 1} image:`, {
+              postId: post._id,
+              fileName: post.file,
+              fullUrl: imageUrl,
+              baseUrl: BASE_URL,
+            });
+
+            // Test if image is accessible
+            const isAccessible = await testImageUrl(imageUrl);
+            console.log(
+              `${isAccessible ? "✅" : "❌"} Image ${index + 1} accessibility:`,
+              isAccessible
+            );
+          });
+        }
       } else {
         console.error(
           "Dashboard - Posts fetch failed:",
@@ -114,10 +169,13 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Dashboard - Error fetching posts:", err);
     }
-  }, [token, API_URL]);
+  }, [token, API_URL, BASE_URL, testImageUrl]);
 
   useEffect(() => {
     if (token) fetchPosts();
+
+    // Debug image URLs on component load
+    debugImageUrls();
   }, [token, fetchPosts]);
 
   // Create post
@@ -126,17 +184,34 @@ const Dashboard = () => {
     const formData = new FormData();
     formData.append("text", newPostText);
     formData.append("category", "dashboard");
-    if (postFile) formData.append("file", postFile);
+    if (postFile) {
+      formData.append("file", postFile);
+      console.log("📤 Uploading file:", {
+        fileName: postFile.name,
+        fileSize: postFile.size,
+        fileType: postFile.type,
+      });
+    }
 
     try {
+      console.log("🚀 Creating post...");
       const res = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await res.json();
+      console.log("📝 Post creation response:", data);
+
       if (res.ok) {
-        setPosts([data.post, ...posts]);
+        if (data.post.file) {
+          console.log("🖼️ Post created with file:", {
+            postId: data.post._id,
+            filePath: data.post.file,
+            fullUrl: `${BASE_URL}/${data.post.file}`,
+          });
+        }
+        setPosts([data.post, ...(posts || [])]);
         setNewPostText("");
         setPostFile(null);
       }
@@ -303,6 +378,80 @@ const Dashboard = () => {
     }
   };
 
+  // Delete post
+  const handleDeletePost = async (postId) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        // Remove the post from the posts array
+        setPosts((prevPosts) =>
+          (prevPosts || []).filter((post) => post._id !== postId)
+        );
+        setSelectedPostMenu(null);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.msg || "Failed to delete post");
+      }
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      alert("Error deleting post");
+    }
+  };
+
+  // Edit post
+  const handleEditPost = async (postId, newText) => {
+    try {
+      const res = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newText }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Update the post in the posts array
+        setPosts((prevPosts) =>
+          (prevPosts || []).map((post) =>
+            post._id === postId ? { ...post, text: data.post.text } : post
+          )
+        );
+        setEditingPost(null);
+        setEditPostText("");
+        setSelectedPostMenu(null);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.msg || "Failed to update post");
+      }
+    } catch (err) {
+      console.error("Error updating post:", err);
+      alert("Error updating post");
+    }
+  };
+
+  // Start editing a post
+  const startEditingPost = (post) => {
+    setEditingPost(post._id);
+    setEditPostText(post.text);
+    setSelectedPostMenu(null);
+  };
+
+  // Cancel editing
+  const cancelEditingPost = () => {
+    setEditingPost(null);
+    setEditPostText("");
+  };
+
   // Update Profile
   const handleUpdateProfile = async () => {
     const formData = new FormData();
@@ -353,7 +502,26 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <LeftSidebar openProfileModal={handleOpenProfileModal} />
+      {/* Mobile Menu Toggle */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className={`mobile-overlay ${isMobileMenuOpen ? "active" : ""}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+
+      <LeftSidebar
+        openProfileModal={handleOpenProfileModal}
+        isMobileOpen={isMobileMenuOpen}
+        closeMobileMenu={() => setIsMobileMenuOpen(false)}
+      />
 
       {/* MAIN FEED */}
       <main className="dashboard-feed">
@@ -412,16 +580,78 @@ const Dashboard = () => {
                   src={getProfilePicUrl(post.user?.profilePic)}
                   alt="Profile"
                 />
-                <div>
+                <div className="dashboard-post-author-info">
                   <h3>{post.user?.firstname || "Unknown User"}</h3>
                   <p>{new Date(post.createdAt).toLocaleString()}</p>
                 </div>
+                {/* Post menu for user's own posts */}
+                {user && post.user?._id === user._id && (
+                  <div className="post-menu-container">
+                    <button
+                      className="post-menu-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPostMenu(
+                          selectedPostMenu === post._id ? null : post._id
+                        );
+                      }}
+                    >
+                      <FaEllipsisV />
+                    </button>
+                    {selectedPostMenu === post._id && (
+                      <div className="post-menu-dropdown">
+                        <button
+                          onClick={() => startEditingPost(post)}
+                          className="post-menu-item"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(post._id)}
+                          className="post-menu-item delete"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <p className="dashboard-post-text">{post.text}</p>
-              {post.file &&
-                (post.file.endsWith(".pdf") ? (
+
+              {/* Post text with edit capability */}
+              {editingPost === post._id ? (
+                <div className="post-edit-container">
+                  <textarea
+                    value={editPostText}
+                    onChange={(e) => setEditPostText(e.target.value)}
+                    className="post-edit-textarea"
+                    rows="3"
+                  />
+                  <div className="post-edit-actions">
+                    <button
+                      onClick={() => handleEditPost(post._id, editPostText)}
+                      className="post-edit-save"
+                    >
+                      💾 Save
+                    </button>
+                    <button
+                      onClick={cancelEditingPost}
+                      className="post-edit-cancel"
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="dashboard-post-text">{post.text}</p>
+              )}
+
+              {post.file && (() => {
+                const imageUrl = getPostFileUrl(post.file);
+                
+                return post.file.endsWith(".pdf") ? (
                   <a
-                    href={`${BASE_URL}/${post.file}`}
+                    href={imageUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="dashboard-post-file"
@@ -429,12 +659,15 @@ const Dashboard = () => {
                     📄 View PDF
                   </a>
                 ) : (
-                  <img
-                    src={`${BASE_URL}/${post.file}`}
-                    alt="Post"
-                    className="dashboard-post-image"
+                  <OptimizedImage
+                    src={imageUrl}
+                    alt="Post attachment"
+                    type="post"
+                    lazy={true}
+                    fallbackSrc={null}
                   />
-                ))}
+                );
+              })()}
               <div className="dashboard-post-footer">
                 <button
                   className={`dashboard-footer-btn ${

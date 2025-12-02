@@ -4,6 +4,7 @@ import { FaGoogle, FaLinkedin, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getApiUrl, getBaseUrl } from "../config/environment";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -25,19 +26,21 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
-  // Use hardcoded local API URL to fix connection issue
-  const API = "http://localhost:5000/api";
+  // Use centralized environment configuration
+  const API = getApiUrl();
+  const BASE_URL = getBaseUrl();
 
   // Debug environment on component load
   React.useEffect(() => {
     console.log("Auth component loaded with environment:");
     console.log("API URL:", API);
+    console.log("BASE URL:", BASE_URL);
     console.log("Environment variables:", {
       VITE_USE_PRODUCTION: import.meta.env.VITE_USE_PRODUCTION,
       MODE: import.meta.env.MODE,
       VERCEL: import.meta.env.VERCEL,
     });
-  }, [API]);
+  }, [API, BASE_URL]);
 
   // ---------- Google Login ----------
   const loginWithGoogle = useGoogleLogin({
@@ -165,7 +168,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000,
+          timeout: 15000, // Reduced to 15 seconds for better UX
         });
       } else {
         // Signin request
@@ -180,7 +183,7 @@ const Auth = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            timeout: 10000,
+            timeout: 15000, // Reduced to 15 seconds for better UX
           }
         );
       }
@@ -220,11 +223,23 @@ const Auth = () => {
         errorMessage = err.response.data.error;
       } else if (err.response?.status === 400) {
         errorMessage = "Invalid email or password";
+      } else if (err.response?.status === 404) {
+        errorMessage =
+          "Server endpoint not found. The server may be starting up. Please wait a moment and try again.";
       } else if (err.response?.status === 500) {
         errorMessage = "Server error. Please try again later.";
-      } else if (err.message === "Network Error") {
+      } else if (err.code === "ECONNABORTED") {
         errorMessage =
-          "Cannot connect to server. Please check your internet connection.";
+          "Request timeout. The server is taking too long to respond. Please try again.";
+      } else if (
+        err.message === "Network Error" ||
+        err.code === "ERR_NETWORK"
+      ) {
+        errorMessage =
+          "Cannot connect to server. Please check your internet connection or try again later.";
+      } else if (err.message.includes("timeout")) {
+        errorMessage =
+          "Connection timeout. The server may be slow. Please try again.";
       }
 
       alert(errorMessage);
@@ -256,7 +271,7 @@ const Auth = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          timeout: 10000,
+          timeout: 30000, // 30 seconds for Render cold starts
         }
       );
 

@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import ErrorBoundary from "./components/ErrorBoundary.jsx"; // ✅ import
+import ErrorBoundary from "./components/ErrorBoundary.jsx"; 
 
 const clientId =
   "729140689303-ep2ukqta4ov9knke95u6ma47vhc54v6m.apps.googleusercontent.com";

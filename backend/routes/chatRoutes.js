@@ -10,6 +10,70 @@ const router = express.Router();
 // Get recent conversations (must be before /:userId route)
 router.get("/recent", authMiddleware, getRecentConversations);
 
+// Mark messages as read
+router.put("/mark-read", authMiddleware, async (req, res) => {
+  try {
+    const { messageIds, fromUserId } = req.body;
+    const currentUserId = req.user._id;
+
+    const Message = require("../models/Message");
+    const result = await Message.updateMany(
+      {
+        _id: { $in: messageIds },
+        from: fromUserId,
+        to: currentUserId,
+        status: { $ne: "read" },
+      },
+      {
+        status: "read",
+        readAt: new Date(),
+      }
+    );
+
+    // Notify sender via Socket.IO
+    if (req.app.get("io")) {
+      const io = req.app.get("io");
+      const senderSockets = global.onlineUsers.get(fromUserId) || [];
+      senderSockets.forEach((id) => {
+        io.to(id).emit("messagesRead", {
+          userId: currentUserId,
+          messageIds: messageIds,
+        });
+      });
+    }
+
+    res.json({ success: true, updated: result.modifiedCount });
+  } catch (err) {
+    console.error("Error marking messages as read:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// Get unread message count for a specific user
+router.get("/unread/count", authMiddleware, async (req, res) => {
+  try {
+    const Message = require("../models/Message");
+    const currentUserId = req.user._id;
+    const { userId } = req.query;
+
+    const query = {
+      to: currentUserId,
+      status: { $in: ["sent", "delivered"] },
+    };
+
+    if (userId) {
+      query.from = userId;
+    }
+
+    const unreadCount = await Message.countDocuments(query);
+
+    res.json({ unreadCount });
+  } catch (err) {
+    console.error("Error fetching unread count:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
 // Fetch chat history with a specific user
 router.get("/:userId", authMiddleware, getMessages);
 
